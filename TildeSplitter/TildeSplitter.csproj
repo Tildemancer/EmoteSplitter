@@ -1,0 +1,54 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+
+  <PropertyGroup>
+    <Version>0.5.2</Version>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Platforms>x64</Platforms>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>$(MSBuildProjectDirectory)\..\build\TildeTools</OutputPath>
+  </PropertyGroup>
+
+  <!-- C2's SQLite brings its native library for every platform, and the game only ever loads win-x64's, so I threw all the others out. -->
+  <Target Name="DropOtherRuntimes" AfterTargets="Build" BeforeTargets="DefaultDalamudPackagerRelease;DefaultDalamudPackagerDebug" Condition="Exists('$(TargetDir)runtimes')">
+    <ItemGroup>
+      <RuntimeFolder Include="$([System.IO.Directory]::GetDirectories('$(TargetDir)runtimes'))" />
+    </ItemGroup>
+    <RemoveDir Directories="@(RuntimeFolder)" Condition="'%(Filename)' != 'win-x64'" />
+  </Target>
+
+  <!--
+    The spellchecker's dictionaries in Hunspell's affix format, shipped so it works the same everywhere.
+    en_US is SCOWL's, with COPYRIGHT-SCOWL.txt beside it as its license asks
+    en_GB is David Bartlett, Andrew Brown and Marco A.G. Pinto's, under the LGPL 2.1, less en_US's words.
+    Its notice is in en_GB.aff, and its license is COPYING-LGPL-2.1.txt
+  -->
+  <ItemGroup>
+    <PackageReference Include="WeCantSpell.Hunspell" Version="7.0.1" />
+    <Content Include="Dictionaries\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!--
+    Definitions from Wiktionary, synonyms from Open English WordNet and Wiktionary
+    Read from disk only when looked up. Their notices ship alongside them.
+  -->
+  <ItemGroup>
+    <Content Include="Lexicon\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- My C2 and XIM settings, see ShippedSetup -->
+  <ItemGroup>
+    <EmbeddedResource Include="Defaults\*.json" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <Author>Tildemancer</Author>
+    <Name>TildeTools</Name>
+    <Punchline>A box of small tools, each switched on or off on its own.</Punchline>
+    <Description>A collection of tools under one window, each with its own tab and master switch. Includes Emote Splitter, which raises the chat box's length limit and sends long messages as paced parts so the server does not drop them, and spellcheck.</Description>
+    <Tags>Social;Utility;Roleplay</Tags>
+    <IconUrl>https://raw.githubusercontent.com/Tildemancer/TildeTools/master/TildeTools/images/icon.png</IconUrl>
+  </PropertyGroup>
+
+</Project>

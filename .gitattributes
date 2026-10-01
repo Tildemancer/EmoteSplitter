@@ -1,0 +1,7 @@
+
+# -text so git doesn't rewrite their line ends on checkout.
+TildeTools/Dictionaries/*.dic -text
+TildeTools/Dictionaries/*.aff -text
+
+# Lexicon needs to be -text too to stop CRLF leaving a stray \r on every line.
+TildeTools/Lexicon/*.tsv -text
