@@ -1,0 +1,28 @@
+[
+  {
+    "Author": "Tildemancer",
+    "Name": "TildeSplitter",
+    "InternalName": "TildeSplitter",
+    "AssemblyVersion": "0.1.0.0",
+    "Description": "Type past the chat limit. Long messages are split and sent in order.",
+    "Punchline": "Type past the chat limit.",
+    "ApplicableVersion": "any",
+    "Tags": [
+      "Social",
+      "Utility",
+      "Roleplay"
+    ],
+    "DalamudApiLevel": 15,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "AcceptsFeedback": true,
+    "IsHide": false,
+    "IsTestingExclusive": false,
+    "RepoUrl": "https://github.com/Tildemancer/TildeSplitter",
+    "DownloadLinkInstall": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip"
+  }
+]
