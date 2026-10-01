@@ -16,11 +16,10 @@ using Chunks = System.Collections.Generic.IReadOnlyList<TildeTools.Modules.Emote
 
 namespace TildeTools.Modules.EmoteSplitter;
 
-internal sealed class EmoteSplitterModule : IModule
+internal sealed class EmoteSplitterModule
 {
     private readonly EmoteSplitterSettings _settings;
     private readonly Action _save;
-    private readonly Action _announce;
     private readonly SendQueue _queue = new();
     private readonly ReplyPin _pin = new();
     private readonly SettingsTab _tab;
@@ -28,12 +27,6 @@ internal sealed class EmoteSplitterModule : IModule
     private SubmitInterceptor? _submit;
     private EnterInterceptor? _enter;
     private InputCapManager? _inputCap;
-
-    public string Id => "emote-splitter";
-
-    public string Name => "Emote Splitter";
-
-    public string Description => "Type past the chat limit. Long messages are split and sent in order.";
 
     public bool IsEnabled { get; private set; }
 
@@ -45,11 +38,10 @@ internal sealed class EmoteSplitterModule : IModule
 
     // Hooked up once, posting window included.
     // While it's off, the queue is empty and nothing calls Update.
-    internal EmoteSplitterModule(EmoteSplitterSettings settings, Action save, Action announce, WindowSystem windows)
+    internal EmoteSplitterModule(EmoteSplitterSettings settings, Action save, WindowSystem windows)
     {
         _settings = settings;
         _save = save;
-        _announce = announce;
         _tab = new SettingsTab(settings, OnSettingsChanged);
         windows.AddWindow(new PostingWindow(_queue, _pin, Stop));
 
@@ -104,8 +96,7 @@ internal sealed class EmoteSplitterModule : IModule
             ChannelCommands.TrySplittable(line, out var header, out var body);
 
             var options = _settings.ToSplitOptions();
-            var chunks = MessageSplitter.SplitWithBodies(header, _settings.DetachOoc(body, options), options);
-            BodySources.Locate(line, chunks, line.Length - body.Length);
+            MessageSplitter.SplitWithBodies(header, _settings.DetachOoc(body, options), options);
         }
         catch (Exception ex)
         {
@@ -130,107 +121,13 @@ internal sealed class EmoteSplitterModule : IModule
         _inputCap?.Dispose();
 
         (_enter, _submit, _inputCap) = (null, null, null);
-        (_replyTo, _droppedAtLogout, _previewed, IsEnabled) = (null, 0, null, false);
+        (_replyTo, _droppedAtLogout, IsEnabled) = (null, 0, false);
     }
 
     public void DrawTab() => _tab.Draw();
 
-    // Uses the preview split so the parts send to the right channel or /r recipient.
-    internal int PostingMsForIpc(string line)
-    {
-        if (Previewed(line) is not { Count: > 1 } chunks
-            || !ChannelCommands.TrySplittable(chunks[0].Line, out var header, out _))
-            return 0;
-
-        var gap = ChannelCommands.Unlimited(ChannelCommands.KeyOf(header)) ? _settings.FreeIntervalMs : _settings.IntervalMs;
-        var pauses = PausesOf(chunks);
-        return pauses[0] + pauses.Skip(1).Sum(pause => Math.Max(gap, pause));
-    }
-
     private static int[] PausesOf(Chunks chunks) =>
         [.. chunks.Select(chunk => Math.Min(chunk.Pause, SendQueue.MaxIntervalMs / 1000) * 1000)];
-
-    internal List<int> SplitBodySpansForIpc(string line)
-    {
-        if (Previewed(line) is not { } chunks)
-            return [];
-
-        var spans = new List<int>(chunks.Count * 2);
-        for (var i = 0; i < chunks.Count; i++)
-        {
-            spans.Add(chunks[i].BodyStart);
-            spans.Add(chunks[i].BodyLength);
-        }
-
-        return spans;
-    }
-
-    // The body is the line's tail, so its length gives the header's length.
-    // Loooong, loooooong, poooooo~ooost....
-    // See BodySources.Locate
-    internal List<int> SplitBodySourcesForIpc(string line) => Previewed(line) is { } chunks
-        ? BodySources.Locate(line, chunks, ChannelCommands.TrySplittable(line, out _, out var body) ? line.Length - body.Length : 0)
-        : [];
-
-    internal List<string> SplitForIpc(string line) =>
-        Previewed(line) is { } chunks ? [.. chunks.Select(c => c.Line)] : [];
-
-    private (string Line, string Pinned, string? ReplyTo, Chunks? Chunks)? _previewed;
-
-    // C2 and WS call four IPC gates per keystroke. One split to serve them all!
-    // Cleared when a setting changes or the module switches off.
-    private Chunks? Previewed(string line)
-    {
-        // A bare line goes to the chat box's channel and a /r to whoever last sent a tell, so both go in the cache key.
-        var pinned = string.Empty;
-        ActiveChannel.TryPin(ref pinned);
-
-        if (_previewed is { } kept && kept.Pinned == pinned && kept.ReplyTo == _replyTo && kept.Line == line)
-            return kept.Chunks;
-
-        // requireSplit is off so a caller's preview matches the later send.
-        var split = TryPrepare(line, requireSplit: false, out var chunks, out var reason, out _);
-        if (!split && reason != null)
-            Svc.Log.Debug($"IPC split declined: {reason}");
-
-        _previewed = (line, pinned, _replyTo, split ? chunks : null);
-        return _previewed.Value.Chunks;
-    }
-
-    internal SplitTake SendStatusForIpc(string line, bool requireSplit = true)
-    {
-        if (!TryPrepare(line, requireSplit, out var chunks, out var reason, out var fits))
-        {
-            if (reason == null)
-                return SplitTake.NotTaken;
-
-            Refuse(reason);
-            return SplitTake.Refused;
-        }
-
-        // Checked BEFORE the hold below, or our own hold would look like the message being posted holding a link.
-        var ahead = CanCutIn;
-        if (CantWait(chunks, ahead, fits) is { } wait)
-        {
-            Refuse(wait);
-            return SplitTake.Refused;
-        }
-
-        if (line.Contains("<item>", StringComparison.Ordinal))
-        {
-            if (ChatSender.HoldingItemLink && _queue.State != SendQueueState.Idle)
-            {
-                Refuse("That message links an item while the one still posting links its own, and only one can be held. " +
-                       "Nothing was sent. Send it again once the Emote Splitter window has closed.");
-                return SplitTake.Refused;
-            }
-
-            ChatSender.HoldItemLink();
-        }
-
-        Queue(chunks, "from another plugin", ahead, fits);
-        return SplitTake.Queued;
-    }
 
     // Returns false with a null reason when the line isn't ours to split.
     private bool TryPrepare(string line, bool requireSplit, out Chunks chunks, out string? reason, out bool fits)
@@ -359,7 +256,6 @@ internal sealed class EmoteSplitterModule : IModule
 
     private void OnSettingsChanged()
     {
-        _previewed = null;
         _queue.IntervalMs = _settings.IntervalMs;
         _queue.FreeIntervalMs = _settings.FreeIntervalMs;
         _save();
@@ -480,13 +376,6 @@ internal sealed class EmoteSplitterModule : IModule
         DropUnconfirmedReply();
         _queue.Update(NowMs);
 
-        // Bare lines take the chat box's channel, so we need WS's None pad to split again, whenever that changes.
-        if (ActiveChannel.Fingerprint() is var channel && channel != _channelSeen)
-        {
-            _channelSeen = channel;
-            _announce();
-        }
-
         if (_finished is { } done && _queue.State == SendQueueState.Idle && NowMs - done.At > SendQueue.ThrottleClaimWindowMs)
         {
             EndBatch();
@@ -495,8 +384,6 @@ internal sealed class EmoteSplitterModule : IModule
                 Svc.Chat.Print("[Emote Splitter] Message sent.");
         }
     }
-
-    private int _channelSeen;
 
     private byte[]? _refused;
 
@@ -671,14 +558,12 @@ internal sealed class EmoteSplitterModule : IModule
         }
     }
 
-    // C2 re-splits its preview when we announce, so a /r there shows who it now goes to.
     private void ReplyTo(string? person)
     {
         if (person == _replyTo)
             return;
 
         _replyTo = person;
-        _announce();
     }
 
     // No echo means they're offline or there's nobody to reply to.

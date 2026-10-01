@@ -3,26 +3,12 @@ using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using TildeTools.Modules;
 
 namespace TildeTools.Ui;
 
 internal static class Widgets
 {
-    internal static readonly Vector4 ErrorColor = new(1f, 0.4f, 0.3f, 1f);
     internal static readonly Vector4 WarningColor = new(1f, 0.5f, 0.3f, 1f);
-
-    internal static void Open(string url)
-    {
-        try
-        {
-            Dalamud.Utility.Util.OpenLink(url);
-        }
-        catch (Exception ex)
-        {
-            Svc.Log.Error(ex, $"Could not open {url}.");
-        }
-    }
 
     // Setters take what they write to as state, so callers pass static lambdas and nothing's allocated per frame. Blessings and all that.
 
@@ -76,26 +62,6 @@ internal static class Widgets
                 picked = i;
 
         return Apply(picked != current, picked, state, set);
-    }
-
-    internal static bool ModuleRow(IModule module, ref bool on)
-    {
-        var unavailable = module.UnavailableReason;
-
-        bool changed;
-        using (ImRaii.Disabled(unavailable != null))
-            changed = ImGui.Checkbox(module.Name, ref on);
-
-        using (ImRaii.PushIndent())
-        using (ImRaii.TextWrapPos(0f))
-        {
-            ImGui.TextDisabled(module.Description);
-
-            if (unavailable != null)
-                ImGui.TextColored(WarningColor, $"Unavailable: {unavailable}");
-        }
-
-        return changed;
     }
 
     private static bool Apply<TState, T>(bool changed, T value, TState state, Action<TState, T> set)

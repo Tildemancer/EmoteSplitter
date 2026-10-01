@@ -38,21 +38,6 @@ internal static unsafe class ActiveChannel
         return true;
     }
 
-    // Checks what Read looks at every frame. Too cheap to worry about...
-    internal static int Fingerprint()
-    {
-        var shell = RaptureShellModule.Instance();
-        if (shell == null)
-            return 0;
-
-        HashCode hash = new();
-        hash.Add(shell->ChatType);
-        hash.Add(shell->TempChatType);
-        hash.AddBytes(shell->TellName.AsSpan());
-        hash.AddBytes(shell->TellWorld.AsSpan());
-        return hash.ToHashCode();
-    }
-
     private static string? Read(RaptureShellModule* shell)
     {
         var type = shell->ChatType;

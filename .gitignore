@@ -3,9 +3,3 @@ obj/
 build/
 .vs/
 *.user
-
-Backup/
-UpgradeLog*.htm
-
-TildeTools.Tests/
-TildeTools.sln

@@ -56,7 +56,6 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
 
         ImGui.TextDisabled("How long the text input field is for the default vanilla chat editbox.");
 
-        ImGui.TextDisabled("If you're looking for Chat 2's editbox, check its tab.");
 
         return dirty;
     }

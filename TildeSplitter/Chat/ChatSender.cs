@@ -16,10 +16,6 @@ internal static unsafe class ChatSender
 
     internal static bool Available => UIModule.MemberFunctionPointers.ProcessChatBoxEntry != null;
 
-    // C2's <at:group,key> tags arrive as text and get encoded the way C2 would, dropping unknown pairs.
-    // ChatTwoModule.EncodeTags, set in Plugin.
-    internal static Func<byte[], byte[]>? EncodeTags;
-
     // Shift-click puts "<item>" in the box and the item in a store that lasts one send, so only part 1 would get the link.
     // Plain data apart from the vtable, so copy-safe at least.
     // No LinkedItemName, that's a Utf8String and its heap buffer.
@@ -41,12 +37,7 @@ internal static unsafe class ChatSender
     // Only the send queue calls this, and the module won't enable without it.
     internal static void Send(string line, bool saveToHistory)
     {
-        // Only when there's a tag.
-        // The first encode builds a list of every tag C2 has.
-        // Each tag it swaps leaves a zero byte at the end, which its own send treats as the terminator.
-        ReadOnlySpan<byte> bytes = EncodeTags is { } encode && line.Contains("<at:", StringComparison.Ordinal)
-            ? encode(Encoding.UTF8.GetBytes(line)).AsSpan().TrimEnd((byte)0)
-            : Encoding.UTF8.GetBytes(line);
+        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(line);
 
         if (bytes.Contains((byte)0))
             throw new InvalidOperationException("Message contained an embedded null byte.");

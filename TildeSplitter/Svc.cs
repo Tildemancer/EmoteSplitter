@@ -14,14 +14,9 @@ internal sealed class Svc
     [PluginService] internal static IAddonLifecycle AddonLife { get; private set; } = null!;
     [PluginService] internal static IGameInteropProvider Interop { get; private set; } = null!;
     [PluginService] internal static IChatGui Chat { get; private set; } = null!;
-    [PluginService] internal static INotificationManager Notifications { get; private set; } = null!;
     [PluginService] internal static ICommandManager Commands { get; private set; } = null!;
     [PluginService] internal static IClientState ClientState { get; private set; } = null!;
     [PluginService] internal static ICondition Condition { get; private set; } = null!;
-    [PluginService] internal static IPartyList Party { get; private set; } = null!;
-    [PluginService] internal static IObjectTable Objects { get; private set; } = null!;
-    [PluginService] internal static IDataManager Data { get; private set; } = null!;
-    [PluginService] internal static IGameConfig GameConfig { get; private set; } = null!;
 
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
 
