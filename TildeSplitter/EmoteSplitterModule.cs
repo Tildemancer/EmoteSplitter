@@ -149,7 +149,6 @@ internal sealed class EmoteSplitterModule
         var options = _settings.ToSplitOptions();
 
         // Leaves room for the /tell Name@World that every part after the first turns into.
-        // Only a /r that splits gets rewritten.
         options.SafetyMargin += ReplyPin.IsReplyHeader(header) ? ReplyPin.HeaderAllowance : 0;
 
         try
