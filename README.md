@@ -1,6 +1,6 @@
-Emote Splitter for Final Fantasy.\
+Emote Splitter for Final Fantasy.
 
-Up to 32k bytes of text in the editbox split into 500 byte chunks. You can cancel on any chunk or keep posting.\
+Up to 32k bytes of text in the editbox split into 500 byte chunks. You can cancel on any chunk or keep posting.
 
 Continuation markers:\
 #c for current chunk.\
