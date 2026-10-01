@@ -27,8 +27,6 @@ internal sealed class EmoteSplitterModule
     private EnterInterceptor? _enter;
     private InputCapManager? _inputCap;
 
-    public bool IsEnabled { get; private set; }
-
     internal SettingsWindow Settings { get; }
 
     public string? UnavailableReason => ChatSender.Available
@@ -82,8 +80,6 @@ internal sealed class EmoteSplitterModule
         // Compiling the splitter on the first split costs about 25 ms on the frame of the first long paste and stutters make me :(
         Task.Run(WarmUp);
 
-        IsEnabled = true;
-
         if (!InputCapManager.Available && _settings.UnlockChatInput)
             Svc.Chat.PrintError("[Emote Splitter] The chat box's length limit could not be raised for this game version. Splitting still works if you paste into the box.");
     }
@@ -123,43 +119,17 @@ internal sealed class EmoteSplitterModule
         _inputCap?.Dispose();
 
         (_enter, _submit, _inputCap) = (null, null, null);
-        (_replyTo, _droppedAtLogout, IsEnabled) = (null, 0, false);
+        (_replyTo, _droppedAtLogout) = (null, 0);
     }
 
     private static int[] PausesOf(Chunks chunks) =>
         [.. chunks.Select(chunk => Math.Min(chunk.Pause, SendQueue.MaxIntervalMs / 1000) * 1000)];
 
-    // Returns false with a null reason when the line isn't ours to split.
-    private bool TryPrepare(string line, bool requireSplit, out Chunks chunks, out string? reason, out bool fits)
-    {
-        (chunks, reason, fits) = ([], null, false);
-
-        if (!IsEnabled || string.IsNullOrWhiteSpace(line))
-            return false;
-
-        var splittable = ChannelCommands.TrySplittable(line, out var header, out var body);
-
-        fits = Encoding.UTF8.GetByteCount(line) <= _settings.Budget;
-        var splits = !fits
-            || splittable && MessageSplitter.FindBreak(body).At >= 0;
-
-        if (requireSplit && !splits)
-            return false;
-
-        if (ChannelCommands.HasPayload(line))
-        {
-            reason = PayloadRefusal;
-            return false;
-        }
-
-        return splittable && TrySplit(header, body, splits, out chunks, out reason);
-    }
-
     private const string PayloadRefusal =
         "That message has to be split, and it contains an auto-translate phrase or item link, " +
         "which splitting would corrupt. Nothing was sent.";
 
-    private bool TrySplit(string header, string body, bool splits, out Chunks chunks, out string? reason)
+    private bool TrySplit(string header, string body, out Chunks chunks, out string? reason)
     {
         (chunks, reason) = ([], null);
 
@@ -167,24 +137,20 @@ internal sealed class EmoteSplitterModule
         // If we know who that is, the parts go to them as tells;
         // If not, ReplyPin tries to work it out from part 1's echo.
         // A bare line gets pinned to the box's channel so switching channels later can't move it.
-        var pinned = ReplyPin.IsReplyHeader(header) && _replyTo is { } to ? $"/tell {to}" : header;
-        if (!ActiveChannel.TryPin(ref pinned) && splits)
+        if (ReplyPin.IsReplyHeader(header) && _replyTo is { } to)
+            header = $"/tell {to}";
+
+        if (!ActiveChannel.TryPin(ref header))
         {
             reason = ActiveChannel.Unreadable;
             return false;
         }
 
-        // A line that fits stays a /r (or bare) if;
-        // the pinned command would push it over the budget,
-        // or the channel can't be read.
-        if (splits || Encoding.UTF8.GetByteCount($"{pinned} {body}") <= _settings.Budget)
-            header = pinned;
-
         var options = _settings.ToSplitOptions();
 
         // Leaves room for the /tell Name@World that every part after the first turns into.
         // Only a /r that splits gets rewritten.
-        options.SafetyMargin += splits && ReplyPin.IsReplyHeader(header) ? ReplyPin.HeaderAllowance : 0;
+        options.SafetyMargin += ReplyPin.IsReplyHeader(header) ? ReplyPin.HeaderAllowance : 0;
 
         try
         {
@@ -350,7 +316,7 @@ internal sealed class EmoteSplitterModule
         var fits = whole <= _settings.Budget;
 
         var ahead = CanCutIn;
-        if (TrySplit(header, body, splits: true, out var chunks, out var reason)
+        if (TrySplit(header, body, out var chunks, out var reason)
             && (reason = CantWait(chunks, ahead, fits)) == null)
         {
             Queue(chunks, "through the send hook", ahead, fits);
@@ -582,11 +548,5 @@ internal sealed class EmoteSplitterModule
         Svc.Chat.PrintError(
             $"[Emote Splitter] Could not confirm who the reply went to, so the remaining {dropped} " +
             "part(s) were not sent. Use /tell Name@World to send them.");
-    }
-
-    public void Dispose()
-    {
-        if (IsEnabled)
-            Disable();
     }
 }

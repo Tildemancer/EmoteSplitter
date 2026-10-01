@@ -8,7 +8,7 @@ namespace TildeSplitter.Splitting;
 
 public sealed class SplitBudgetException(string message) : Exception(message);
 
-public readonly record struct SplitPart(string Line, int BodyStart, int BodyLength, int Pause);
+public readonly record struct SplitPart(string Line, int Pause);
 
 // What a break marker does to the text after it, up to the next marker:
 // |n = new part
@@ -80,7 +80,7 @@ public static class MessageSplitter
                     $"Part {i + 1}/{bodies.Count} came out at {bytes} bytes, over the {limit}-byte limit. " +
                     "This usually means the header or continuation marker is too long.");
 
-            lines.Add(new(line, prefix.Length, bodies[i].Text.Length, bodies[i].Pause));
+            lines.Add(new(line, bodies[i].Pause));
         }
 
         return lines;
@@ -299,8 +299,7 @@ public static class MessageSplitter
     // The player's break is the marker, then n or b for the kind, then a pause in seconds, like "|n", "|nn" or "|nb3"
     // It has to stand alone between whitespace or at either end, so "and|nor" doesn't count
     // A pause too long for an int comes back as int.MaxValue for the caller to cap
-    // anywhere: glued to other text too, like "((|n3" before the OOC tags come off.
-    public static (int At, int Length, BreakKind Kind, int Seconds) FindBreak(string text, int from = 0, bool anywhere = false)
+    public static (int At, int Length, BreakKind Kind, int Seconds) FindBreak(string text, int from = 0)
     {
         for (var at = text.IndexOf(BreakMarker, from, StringComparison.Ordinal); at >= 0; at = text.IndexOf(BreakMarker, at + 1, StringComparison.Ordinal))
         {
@@ -314,7 +313,7 @@ public static class MessageSplitter
             while (end < text.Length && char.IsAsciiDigit(text[end]))
                 end++;
 
-            if (anywhere || (at == 0 || char.IsWhiteSpace(text[at - 1])) && (end == text.Length || char.IsWhiteSpace(text[end])))
+            if ((at == 0 || char.IsWhiteSpace(text[at - 1])) && (end == text.Length || char.IsWhiteSpace(text[end])))
                 return (at, end - at, kind, end == digits ? 0 : int.TryParse(text.AsSpan(digits, end - digits), out var seconds) ? seconds : int.MaxValue);
         }
 
