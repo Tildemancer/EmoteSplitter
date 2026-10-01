@@ -264,6 +264,10 @@ internal sealed class EmoteSplitterModule
 
     private bool OnEnteredLine(string line, byte[] raw)
     {
+        // The return false below still hands the Enter to the game, which closes the box.
+        if (line.Length == 0 && _queue.AwaitingGo)
+            _queue.Go();
+
         var bytes = Encoding.UTF8.GetByteCount(line);
         var payload = ChannelCommands.HasPayload(line);
         var splittable = ChannelCommands.TrySplittable(line, out var header, out var body);
