@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using Dalamud.Configuration;
 
 using TildeSplitter.Sending;
@@ -42,15 +41,7 @@ public sealed class Configuration : IPluginConfiguration
 
     public const int MinTextBytes = 16;
 
-    public bool PreferSentenceBreaks { get; set; } = true;
-
-    public string ContinuationPrefix { get; set; } = string.Empty;
-
-    public string ContinuationSuffix { get; set; } = string.Empty;
-
-    public string FinalMarker { get; set; } = string.Empty;
-
-    public List<ChunkMarker> Markers { get; set; } = [];
+    public SplitOptions Split { get; set; } = new();
 
     public bool WrapOocPerPart { get; set; } = true;
 
@@ -77,16 +68,8 @@ public sealed class Configuration : IPluginConfiguration
 
     public bool ShowProgress { get; set; } = true;
 
-    public SplitOptions ToSplitOptions() => new()
-    {
-        MaxBytes = MaxBytesPerChunk,
-        SafetyMargin = SafetyMargin,
-        PreferSentenceBreaks = PreferSentenceBreaks,
-        ContinuationPrefix = ContinuationPrefix,
-        ContinuationSuffix = ContinuationSuffix,
-        FinalMarker = FinalMarker,
-        Markers = Markers,
-    };
+    // Each split's DetachOoc and reply allowance write to this copy.
+    public SplitOptions ToSplitOptions() => Split with { MaxBytes = MaxBytesPerChunk, SafetyMargin = SafetyMargin };
 
     public string DetachOoc(string body, SplitOptions options)
     {

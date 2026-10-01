@@ -83,7 +83,7 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
 
         ImGui.TextDisabled("Anything longer than this won't post.");
 
-        dirty |= Widgets.Toggle("Break at sentence ends where possible", settings.PreferSentenceBreaks, settings, static (s, v) => s.PreferSentenceBreaks = v);
+        dirty |= Widgets.Toggle("Break at sentence ends where possible", settings.Split.PreferSentenceBreaks, settings.Split, static (s, v) => s.PreferSentenceBreaks = v);
 
         return dirty;
     }
@@ -106,15 +106,15 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
         ImGui.TextDisabled("#r - How many paragraphs are left.");
         ImGui.TextDisabled("Leave a box empty for no marker.");
 
-        var dirty = Edit("Start of later parts", settings.ContinuationPrefix, 32, settings, static (s, v) => s.ContinuationPrefix = v);
+        var dirty = Edit("Start of later parts", settings.Split.ContinuationPrefix, 32, settings.Split, static (s, v) => s.ContinuationPrefix = v);
 
         ImGui.TextDisabled("Opening marker on body paragraphs.");
 
-        dirty |= Edit("End of earlier parts", settings.ContinuationSuffix, 32, settings, static (s, v) => s.ContinuationSuffix = v);
+        dirty |= Edit("End of earlier parts", settings.Split.ContinuationSuffix, 32, settings.Split, static (s, v) => s.ContinuationSuffix = v);
 
         ImGui.TextDisabled("Closing marker on all paragraphs except the final one.");
 
-        dirty |= Edit("End of the last part", settings.FinalMarker, 32, settings, static (s, v) => s.FinalMarker = v);
+        dirty |= Edit("End of the last part", settings.Split.FinalMarker, 32, settings.Split, static (s, v) => s.FinalMarker = v);
 
         ImGui.TextDisabled("Exclusive markers for the final paragraph.");
 
@@ -147,13 +147,13 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
 
         var dirty = ImGui.Button("Add a marker");
         if (dirty)
-            settings.Markers.Add(new ChunkMarker { Text = "#c/#m" });
+            settings.Split.Markers.Add(new ChunkMarker { Text = "#c/#m" });
 
         var (remove, close) = (-1, ImGui.GetContentRegionAvail().X - ImGui.GetFontSize());
 
-        for (var i = 0; i < settings.Markers.Count; i++)
+        for (var i = 0; i < settings.Split.Markers.Count; i++)
         {
-            var marker = settings.Markers[i];
+            var marker = settings.Split.Markers[i];
 
             using var id = ImRaii.PushId(i);
 
@@ -170,7 +170,7 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
 
         if (remove >= 0)
         {
-            settings.Markers.RemoveAt(remove);
+            settings.Split.Markers.RemoveAt(remove);
             dirty = true;
         }
 
