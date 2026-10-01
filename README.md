@@ -6,7 +6,7 @@ Continuation markers:\
 #c for current chunk.\
 #m for max chunks.\
 #r for remaining chunks.\
-Or anything else you set. I like [FIN], like a movie.
+Or anything else you set. I like [FIN], like a movie. You can mix and match per part, be that only on opening posts, middle posts' beginning and ends, or the last post's end.
 
 Manual breaks:\
 |n is a raw break.\
