@@ -2,7 +2,6 @@ using System;
 using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace TildeSplitter.Chat;
@@ -16,22 +15,6 @@ internal static unsafe class ChatSender
 
     internal static bool Available => UIModule.MemberFunctionPointers.ProcessChatBoxEntry != null;
 
-    // Shift-click puts "<item>" in the box and the item in a store that lasts one send, so only part 1 would get the link.
-    // Plain data apart from the vtable, so copy-safe at least.
-    // No LinkedItemName, that's a Utf8String and its heap buffer.
-    private static AgentChatLog.LinkedInventoryItem _heldItem;
-
-    internal static bool HoldingItemLink { get; private set; }
-
-    // Call on the frame it was typed, while the copy is still the right one.
-    internal static void HoldItemLink()
-    {
-        _heldItem = AgentChatLog.Instance()->LinkedItem;
-        HoldingItemLink = true;
-    }
-
-    internal static void ReleaseItemLink() => HoldingItemLink = false;
-
     // Framework thread only.
     // No Available check
     // Only the send queue calls this, and the module won't enable without it.
@@ -44,17 +27,11 @@ internal static unsafe class ChatSender
 
         byte[] buffer = [.. bytes, 0];
 
-        var agent = HoldingItemLink ? AgentChatLog.Instance() : null;
-        var theirs = agent != null ? agent->LinkedItem : default;
-
         Utf8String* message = null;
         try
         {
             fixed (byte* p = buffer)
                 message = Utf8String.FromSequence(p);
-
-            if (agent != null)
-                agent->LinkedItem = _heldItem;
 
             Passthrough = true;
             UIModule.Instance()->ProcessChatBoxEntry(message, 0, saveToHistory);
@@ -62,9 +39,6 @@ internal static unsafe class ChatSender
         finally
         {
             Passthrough = false;
-
-            if (agent != null)
-                agent->LinkedItem = theirs;
 
             // The game destructor has to handle this since it's on the game's heap.
             if (message != null)

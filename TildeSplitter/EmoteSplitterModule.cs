@@ -229,9 +229,9 @@ internal sealed class EmoteSplitterModule
             Svc.Chat.Print($"[Emote Splitter] Sending {chunks.Count} parts...");
     }
 
-    // Can't cut in front of a /r, a held item link, or an open question! /r resets its pin on the new message so you'd end up sending all your spicy text to like, IDK, your FC lead or something.
+    // Can't cut in front of a /r or an open question! /r resets its pin on the new message so you'd end up sending all your spicy text to like, IDK, your FC lead or something.
     private bool CanCutIn =>
-        _queue.State != SendQueueState.Asking && !ChatSender.HoldingItemLink && _queue.Underway != ChannelCommands.Reply;
+        _queue.State != SendQueueState.Asking && _queue.Underway != ChannelCommands.Reply;
 
     private string? CantWait(Chunks chunks, bool ahead, bool typed)
     {
@@ -405,11 +405,10 @@ internal sealed class EmoteSplitterModule
                 input->SetText(bytes);
     }
 
-    // Every way a batch can end goes through here, that way the pin and the held item always get released with it.
+    // Every way a batch can end goes through here, that way the pin always gets released with it.
     private void EndBatch()
     {
         _pin.Reset();
-        ChatSender.ReleaseItemLink();
         _toHistory.Clear();
         _finished = null;
     }
@@ -466,7 +465,7 @@ internal sealed class EmoteSplitterModule
 
     private (long At, bool Say)? _finished;
 
-    // "Not heard" can still ask about the last part for ThrottleClaimWindowMs, and posting it again needs its item link, see OnFrameworkUpdate
+    // "Not heard" can still ask about the last part for ThrottleClaimWindowMs, see OnFrameworkUpdate
     // If a typed line went last, keep the Say that the post's own Finished set.
     private void OnFinished() =>
         _finished = (NowMs, _settings.ShowProgress && (!_queue.LastSentWasTyped || _finished?.Say == true));
