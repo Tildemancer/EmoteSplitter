@@ -41,6 +41,9 @@ public sealed class SendQueue
     private long _lastTypedAt = -MaxIntervalMs;
     private bool _queueWentLast;
 
+    // A message's first part goes on the Enter that sent it, each part after it on its own click. I know this is kind of a regression from TildeTools, but...
+    private bool _go;
+
     public const int ThrottleClaimWindowMs = 3000;
 
     // ProcessChatBoxEntry skips the game's rate limit, so this is a custom floor to be safe.
@@ -82,6 +85,10 @@ public sealed class SendQueue
     public string? Suspect => _suspect?.Line;
 
     public bool LastSentWasTyped => _lastSent?.From.Typed == true;
+
+    public bool AwaitingGo => _messages.Count > 0 && _suspect == null && _messages[0].Started && !_go;
+
+    public void Go() => _go = true;
 
     // The channel of the message a cut-in would go in front of (with the last started one still queued).
     // CanCutIn checks it so nothing cuts in front of /r.
@@ -200,6 +207,7 @@ public sealed class SendQueue
             return;
 
         _suspect = null;
+        _go = true;
         if (!resend)
             return;
 
@@ -223,6 +231,11 @@ public sealed class SendQueue
             _heldUntil = nowMs + IntervalMs;
             return;
         }
+
+        if (_messages[0].Started && !_go)
+            return;
+
+        _go = false;
 
         if (NextLine() is { } line)
             SendHead(line, nowMs);

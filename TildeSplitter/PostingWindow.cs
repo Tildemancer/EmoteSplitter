@@ -57,7 +57,18 @@ internal sealed class PostingWindow : Window
             ImGui.SameLine();
         }
         else if (_queue.HeadPart is (var part, var of))
-            ImGui.TextUnformatted($"{(state == SendQueueState.Held ? "Waiting to post" : "Posting")} part {part} of {of} to {_shown.Where}");
+        {
+            var doing = _queue.AwaitingGo ? "Ready to post" : state == SendQueueState.Held ? "Waiting to post" : "Posting";
+            ImGui.TextUnformatted($"{doing} part {part} of {of} to {_shown.Where}");
+
+            if (_queue.AwaitingGo)
+            {
+                if (ImGui.Button("Continue posting"))
+                    _queue.Go();
+
+                ImGui.SameLine();
+            }
+        }
 
         if (ImGui.Button("Stop"))
             _stop();
