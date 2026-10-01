@@ -5,7 +5,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace TildeTools.Modules.EmoteSplitter.Chat;
+namespace TildeSplitter.Chat;
 
 // ProcessChatBoxEntry is sig-scanned and can be null post-patch.
 // If called null, it crashes the game. Yikes!

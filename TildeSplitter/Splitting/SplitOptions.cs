@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TildeTools.Modules.EmoteSplitter.Splitting;
+namespace TildeSplitter.Splitting;
 
 public sealed class SplitOptions
 {

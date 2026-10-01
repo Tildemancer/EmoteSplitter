@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 
-namespace TildeTools.Modules.EmoteSplitter.Chat;
+namespace TildeSplitter.Chat;
 
 // LogMessage rows the send queue acts on, see EmoteSplitterModule.OnLogMessage
 internal static class LogMessages
 {
-    // "Your message was not heard." must be the client's, probably from typing too fast, because TT sends skip the rate check.
+    // "Your message was not heard." must be the client's, probably from typing too fast, because our sends skip the rate check.
     internal const uint Throttled = 749;
 
     // From the game;

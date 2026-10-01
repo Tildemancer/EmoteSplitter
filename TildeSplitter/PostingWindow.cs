@@ -2,10 +2,10 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
-using TildeTools.Modules.EmoteSplitter.Chat;
-using TildeTools.Modules.EmoteSplitter.Sending;
+using TildeSplitter.Chat;
+using TildeSplitter.Sending;
 
-namespace TildeTools.Modules.EmoteSplitter;
+namespace TildeSplitter;
 
 internal sealed class PostingWindow : Window
 {
@@ -17,7 +17,7 @@ internal sealed class PostingWindow : Window
 
     // NoFocusOnAppearing so it doesn't steal the chat box from someone mid-sentence.
     internal PostingWindow(SendQueue queue, ReplyPin pin, Action stop)
-        : base("Emote Splitter##posting",
+        : base("Emote Splitter###tildesplitter-posting",
             ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNav)
     {
         (_queue, _pin, _stop) = (queue, pin, stop);

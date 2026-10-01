@@ -1,24 +1,24 @@
 using System;
 using System.Text;
 using Dalamud.Hooking;
-using TildeTools.Modules.EmoteSplitter.Splitting;
+using TildeSplitter.Splitting;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 
-namespace TildeTools.Modules.EmoteSplitter.Chat;
+namespace TildeSplitter.Chat;
 
 internal sealed unsafe class SubmitInterceptor : IDisposable
 {
     private delegate void ProcessChatBoxEntryDelegate(UIModule* ui, Utf8String* message, nint a4, bool saveToHistory);
 
     private readonly Hook<ProcessChatBoxEntryDelegate> _hook;
-    private readonly EmoteSplitterSettings _settings;
+    private readonly Configuration _settings;
     private readonly Func<string, string, bool> _onSplit;
     private readonly Func<string, bool, bool> _onPlayerLine;
 
     // onSplit, onPlayerLine: true means it took the line.
     // Built only while ChatSender.Available, see EmoteSplitterModule.UnavailableReason
-    internal SubmitInterceptor(EmoteSplitterSettings settings, Func<string, string, bool> onSplit, Func<string, bool, bool> onPlayerLine)
+    internal SubmitInterceptor(Configuration settings, Func<string, string, bool> onSplit, Func<string, bool, bool> onPlayerLine)
     {
         _settings = settings;
         _onSplit = onSplit;

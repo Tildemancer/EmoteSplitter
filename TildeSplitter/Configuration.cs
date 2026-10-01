@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Dalamud.Configuration;
 
-using TildeTools.Modules.EmoteSplitter.Sending;
-using TildeTools.Modules.EmoteSplitter.Splitting;
+using TildeSplitter.Sending;
+using TildeSplitter.Splitting;
 
-namespace TildeTools.Modules.EmoteSplitter;
+namespace TildeSplitter;
 
 [Serializable]
-public sealed class EmoteSplitterSettings
+public sealed class Configuration : IPluginConfiguration
 {
+    public int Version { get; set; }
+
     // Text positions are 16-bit signed and the game adds offsets to lengths, so stay under 32767. 32k seems like a nice safe number, and below the minimum the plugin is pointless anyway.
     public const int MaxUnlockBytes = 32000;
 

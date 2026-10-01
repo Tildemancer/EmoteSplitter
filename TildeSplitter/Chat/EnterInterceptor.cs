@@ -6,7 +6,7 @@ using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using InteropGenerator.Runtime;
 
-namespace TildeTools.Modules.EmoteSplitter.Chat;
+namespace TildeSplitter.Chat;
 
 // byte* for CStringPointer, which UnmanagedCallersOnly won't take.
 // They pass identically.

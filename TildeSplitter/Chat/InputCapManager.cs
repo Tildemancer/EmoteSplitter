@@ -3,12 +3,12 @@ using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace TildeTools.Modules.EmoteSplitter.Chat;
+namespace TildeSplitter.Chat;
 
 // Re-applies on addon events since the game will rebuild the component and resets the cap in the process.
 internal sealed unsafe class InputCapManager : IDisposable
 {
-    private readonly EmoteSplitterSettings _settings;
+    private readonly Configuration _settings;
 
     private uint _originalMaxByte;
     private uint _originalMaxChar;
@@ -19,7 +19,7 @@ internal sealed unsafe class InputCapManager : IDisposable
     internal static bool Available =>
         AtkComponentTextInput.MemberFunctionPointers.SetMaxByte != null && AtkComponentTextInput.MemberFunctionPointers.SetMaxChar != null;
 
-    internal InputCapManager(EmoteSplitterSettings settings)
+    internal InputCapManager(Configuration settings)
     {
         _settings = settings;
 

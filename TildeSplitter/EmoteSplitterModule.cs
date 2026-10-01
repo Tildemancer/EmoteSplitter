@@ -9,26 +9,27 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-using TildeTools.Modules.EmoteSplitter.Chat;
-using TildeTools.Modules.EmoteSplitter.Sending;
-using TildeTools.Modules.EmoteSplitter.Splitting;
-using Chunks = System.Collections.Generic.IReadOnlyList<TildeTools.Modules.EmoteSplitter.Splitting.SplitPart>;
+using TildeSplitter.Chat;
+using TildeSplitter.Sending;
+using TildeSplitter.Splitting;
+using Chunks = System.Collections.Generic.IReadOnlyList<TildeSplitter.Splitting.SplitPart>;
 
-namespace TildeTools.Modules.EmoteSplitter;
+namespace TildeSplitter;
 
 internal sealed class EmoteSplitterModule
 {
-    private readonly EmoteSplitterSettings _settings;
+    private readonly Configuration _settings;
     private readonly Action _save;
     private readonly SendQueue _queue = new();
     private readonly ReplyPin _pin = new();
-    private readonly SettingsTab _tab;
 
     private SubmitInterceptor? _submit;
     private EnterInterceptor? _enter;
     private InputCapManager? _inputCap;
 
     public bool IsEnabled { get; private set; }
+
+    internal SettingsWindow Settings { get; }
 
     public string? UnavailableReason => ChatSender.Available
         ? null
@@ -38,11 +39,12 @@ internal sealed class EmoteSplitterModule
 
     // Hooked up once, posting window included.
     // While it's off, the queue is empty and nothing calls Update.
-    internal EmoteSplitterModule(EmoteSplitterSettings settings, Action save, WindowSystem windows)
+    internal EmoteSplitterModule(Configuration settings, Action save, WindowSystem windows)
     {
         _settings = settings;
         _save = save;
-        _tab = new SettingsTab(settings, OnSettingsChanged);
+        Settings = new SettingsWindow(settings, OnSettingsChanged);
+        windows.AddWindow(Settings);
         windows.AddWindow(new PostingWindow(_queue, _pin, Stop));
 
         _queue.Sender = line => ChatSender.Send(line, saveToHistory: _toHistory.Remove(line));
@@ -64,7 +66,7 @@ internal sealed class EmoteSplitterModule
         _queue.IntervalMs = _settings.IntervalMs;
         _queue.FreeIntervalMs = _settings.FreeIntervalMs;
 
-        // ChatMessage fires first for every line, handled later or not, ergo TT sees the sender before another plugin writes a rename back.
+        // ChatMessage fires first for every line, handled later or not, ergo we see the sender before another plugin writes a rename back.
         Svc.Chat.ChatMessage += OnChatMessage;
         Svc.Chat.LogMessage += OnLogMessage;
         Svc.ClientState.Logout += OnLogout;
@@ -123,8 +125,6 @@ internal sealed class EmoteSplitterModule
         (_enter, _submit, _inputCap) = (null, null, null);
         (_replyTo, _droppedAtLogout, IsEnabled) = (null, 0, false);
     }
-
-    public void DrawTab() => _tab.Draw();
 
     private static int[] PausesOf(Chunks chunks) =>
         [.. chunks.Select(chunk => Math.Min(chunk.Pause, SendQueue.MaxIntervalMs / 1000) * 1000)];
@@ -325,7 +325,7 @@ internal sealed class EmoteSplitterModule
         var held = header.Length > 0 ? $"{header} {body}" : body;
         var canHold = pinned && !ChannelCommands.HasPayload(line)
             && !line.Contains("<item>", StringComparison.Ordinal)
-            && Encoding.UTF8.GetByteCount(held) <= EmoteSplitterSettings.MaxChunkBytes;
+            && Encoding.UTF8.GetByteCount(held) <= Configuration.MaxChunkBytes;
 
         if (!_queue.Typed(held, channel, NowMs, canHold))
             return false;
@@ -359,7 +359,7 @@ internal sealed class EmoteSplitterModule
         }
 
         // Another plugin's line can't be put back in its box since putBack is null, so; if it fits, it sits -- I mean, it goes unsplit.
-        if (putBack == null && whole <= EmoteSplitterSettings.MaxChunkBytes)
+        if (putBack == null && whole <= Configuration.MaxChunkBytes)
         {
             Svc.Log.Info($"Sent whole: {reason}");
             return false;

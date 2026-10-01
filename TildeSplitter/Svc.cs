@@ -3,7 +3,7 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 
-namespace TildeTools;
+namespace TildeSplitter;
 
 // IChatGui only prints locally and there's no chat-sending service, so sending goes through ChatSender.
 internal sealed class Svc

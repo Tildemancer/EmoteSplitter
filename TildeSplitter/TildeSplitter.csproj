@@ -1,20 +1,20 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.5.2</Version>
+    <Version>0.1.0</Version>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>x64</Platforms>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(MSBuildProjectDirectory)\..\build\TildeTools</OutputPath>
+    <OutputPath>$(MSBuildProjectDirectory)\..\build\TildeSplitter</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
     <Author>Tildemancer</Author>
-    <Name>TildeTools</Name>
-    <Punchline>A box of small tools, each switched on or off on its own.</Punchline>
-    <Description>A collection of tools under one window, each with its own tab and master switch. Includes Emote Splitter, which raises the chat box's length limit and sends long messages as paced parts so the server does not drop them, and spellcheck.</Description>
+    <Name>TildeSplitter</Name>
+    <Punchline>Type past the chat limit.</Punchline>
+    <Description>Type past the chat limit. Long messages are split and sent in order.</Description>
     <Tags>Social;Utility;Roleplay</Tags>
   </PropertyGroup>
 

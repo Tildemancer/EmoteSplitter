@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
 
-namespace TildeTools.Modules.EmoteSplitter.Splitting;
+namespace TildeSplitter.Splitting;
 
 public enum MarkerSlot
 {

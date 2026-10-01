@@ -2,16 +2,17 @@ using System;
 using System.Linq;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-using TildeTools.Modules.EmoteSplitter.Chat;
-using TildeTools.Modules.EmoteSplitter.Sending;
-using TildeTools.Modules.EmoteSplitter.Splitting;
-using static TildeTools.Ui.Widgets;
+using Dalamud.Interface.Windowing;
+using TildeSplitter.Chat;
+using TildeSplitter.Sending;
+using TildeSplitter.Splitting;
+using static TildeSplitter.Widgets;
 
-namespace TildeTools.Modules.EmoteSplitter;
+namespace TildeSplitter;
 
-internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChanged)
+internal sealed class SettingsWindow(Configuration settings, Action onChanged) : Window("TildeSplitter###tildesplitter-settings")
 {
-    internal void Draw()
+    public override void Draw()
     {
         using var scroll = ImRaii.Child("##emote-splitter-scroll");
         if (!scroll.Success)
@@ -48,10 +49,10 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
         if (!InputCapManager.Available)
             ImGui.TextColored(WarningColor, "The game functions for this were not found on this game version.");
 
-        var dirty = Toggle("Oversized Emotes", settings.UnlockChatInput, settings, static (s, v) => s.UnlockChatInput = v);
+        var dirty = Widgets.Toggle("Oversized Emotes", settings.UnlockChatInput, settings, static (s, v) => s.UnlockChatInput = v);
 
         dirty |= Paced("Chat limit (bytes)", ref _unlockBytes, settings.UnlockedMaxBytes,
-            EmoteSplitterSettings.MinUnlockBytes, EmoteSplitterSettings.MaxUnlockBytes,
+            Configuration.MinUnlockBytes, Configuration.MaxUnlockBytes,
             settings, static (s, v) => s.UnlockedMaxBytes = v);
 
         ImGui.TextDisabled("How long the text input field is for the default vanilla chat editbox.");
@@ -65,24 +66,24 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
         ImGui.TextUnformatted("Splitting");
 
         var dirty = Paced("Character Limit", ref _chunkBytes, settings.MaxBytesPerChunk,
-            EmoteSplitterSettings.MinChunkBytes, EmoteSplitterSettings.MaxChunkBytes,
+            Configuration.MinChunkBytes, Configuration.MaxChunkBytes,
             settings, static (s, v) => s.MaxBytesPerChunk = v);
 
         ImGui.TextDisabled("The length Emote Splitter fits each part into. The game can only handle ~500 itself, so you can't " +
                            "go higher than that. Technically, this is in bytes, but for most purposes 'characters' is right.");
 
         dirty |= Paced("Safety margin", ref _margin, settings.SafetyMargin,
-            0, EmoteSplitterSettings.MaxSafetyMarginBytes, settings, static (s, v) => s.SafetyMargin = v);
+            0, Configuration.MaxSafetyMarginBytes, settings, static (s, v) => s.SafetyMargin = v);
 
         ImGui.TextDisabled("Bytes held back from each part. Change this if posts start failing.");
 
         dirty |= Paced("Refuse beyond this many posts", ref _maxChunks, settings.MaxChunksPerMessage,
-            EmoteSplitterSettings.MinChunksPerMessage, EmoteSplitterSettings.MaxChunksPerMessageCeiling,
+            Configuration.MinChunksPerMessage, Configuration.MaxChunksPerMessageCeiling,
             settings, static (s, v) => s.MaxChunksPerMessage = v);
 
         ImGui.TextDisabled("Anything longer than this won't post.");
 
-        dirty |= Toggle("Break at sentence ends where possible", settings.PreferSentenceBreaks, settings, static (s, v) => s.PreferSentenceBreaks = v);
+        dirty |= Widgets.Toggle("Break at sentence ends where possible", settings.PreferSentenceBreaks, settings, static (s, v) => s.PreferSentenceBreaks = v);
 
         return dirty;
     }
@@ -124,7 +125,7 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
     {
         ImGui.TextUnformatted("Out of character");
 
-        var dirty = Toggle("Give every part its own OOC tags", settings.WrapOocPerPart, settings, static (s, v) => s.WrapOocPerPart = v);
+        var dirty = Widgets.Toggle("Give every part its own OOC tags", settings.WrapOocPerPart, settings, static (s, v) => s.WrapOocPerPart = v);
 
         ImGui.TextDisabled("Type the tags once, around the whole message. Off, the first part opens them and the last closes them.");
 
@@ -206,9 +207,9 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
             dirty |= Slide("Starting at part", marker.StartAt, 1, ChunkMarker.MaxNth, marker, static (m, v) => m.StartAt = v);
         }
 
-        dirty |= Toggle("Out of character", marker.WhenOoc, marker, static (m, v) => m.WhenOoc = v);
+        dirty |= Widgets.Toggle("Out of character", marker.WhenOoc, marker, static (m, v) => m.WhenOoc = v);
         ImGui.SameLine();
-        dirty |= Toggle("In character", marker.WhenNotOoc, marker, static (m, v) => m.WhenNotOoc = v);
+        dirty |= Widgets.Toggle("In character", marker.WhenNotOoc, marker, static (m, v) => m.WhenNotOoc = v);
 
         return dirty;
     }
@@ -253,9 +254,9 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
         dirty |= Paced("Delay on /fc, /p, /a, /l#, /cwl# (ms)", ref _freeInterval, settings.FreeIntervalMs,
             0, SendQueue.MaxIntervalMs, settings, static (s, v) => s.FreeIntervalMs = v);
 
-        ImGui.TextDisabled($"Macros post ~{EmoteSplitterSettings.MacroPaceMs} ms apart (or every 10 frames at 60 FPS).");
+        ImGui.TextDisabled($"Macros post ~{Configuration.MacroPaceMs} ms apart (or every 10 frames at 60 FPS).");
 
-        if (settings.FreeIntervalMs < EmoteSplitterSettings.MacroPaceMs)
+        if (settings.FreeIntervalMs < Configuration.MacroPaceMs)
             ImGui.TextColored(WarningColor, "DANGER! This is faster than a macro would send, so it might be detectable Square-side! You set it " +
                                              "this low at your own risk.");
 
@@ -266,12 +267,12 @@ internal sealed class SettingsTab(EmoteSplitterSettings settings, Action onChang
     {
         ImGui.TextUnformatted("While posting");
 
-        var dirty = Toggle("Offer to resend on 'Your message was not heard...'", settings.RetryOnThrottle,
+        var dirty = Widgets.Toggle("Offer to resend on 'Your message was not heard...'", settings.RetryOnThrottle,
             settings, static (s, v) => s.RetryOnThrottle = v);
 
         ImGui.TextDisabled("If the game rejects a message, we ask to send it again.");
 
-        dirty |= Toggle("Post Feedback", settings.ShowProgress, settings, static (s, v) => s.ShowProgress = v);
+        dirty |= Widgets.Toggle("Post Feedback", settings.ShowProgress, settings, static (s, v) => s.ShowProgress = v);
 
         return dirty;
     }
