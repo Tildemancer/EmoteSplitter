@@ -120,6 +120,10 @@ internal sealed class EmoteSplitterModule : IDisposable
     private const string UnsplittableRefusal =
         "That message is too long for the game and this isn't a recognized channel. Nothing was sent.";
 
+    private const string ItemRefusal =
+        "The split message you just tried to send would try to put the <item> you linked past the first post, " +
+        "which is impossible. Nothing was sent.";
+
     private bool TrySplit(ref string header, string body, out Chunks chunks, out string? reason)
     {
         (chunks, reason) = ([], null);
@@ -159,11 +163,17 @@ internal sealed class EmoteSplitterModule : IDisposable
             return false;
         }
 
-        if (chunks.Count <= _settings.MaxChunksPerMessage)
+        if (chunks.Count > _settings.MaxChunksPerMessage)
+            reason = $"That message needs {chunks.Count} parts, over the limit of {_settings.MaxChunksPerMessage}. " +
+                     "Nothing was sent. Raise the limit in /splitter if you meant it.";
+        // <item> is only held for a single post.
+        // I had a workaround for this in TildeTools but nothing called it anymore.
+        // Also, it'd need two write into a game struct for every part to implement again, though, and that's been spooky elsewhere. It's on the table for suggestions though.
+        else if (chunks.Skip(1).Any(chunk => chunk.Line.Contains("<item>", StringComparison.Ordinal)))
+            reason = ItemRefusal;
+        else
             return true;
 
-        reason = $"That message needs {chunks.Count} parts, over the limit of {_settings.MaxChunksPerMessage}. " +
-                 "Nothing was sent. Raise the limit in /splitter if you meant it.";
         chunks = [];
         return false;
     }
@@ -190,22 +200,30 @@ internal sealed class EmoteSplitterModule : IDisposable
 
     private string? CantWait(string header, Chunks chunks, bool ahead, bool typed)
     {
-        if (!ReplyPin.IsReplyHeader(header))
+        // Part 1's <item> is filled in as it posts, so it has the usual waits
+        var why = ReplyPin.IsReplyHeader(header) ? ReplyCantWait
+            : chunks[0].Line.Contains("<item>", StringComparison.Ordinal) ? ItemCantWait
+            : null;
+
+        if (why == null)
             return null;
 
         if (!_queue.CanSend())
-            return ReplyCantWait + "for a loading screen or cutscene to end. Nothing was sent. Send it again once it has.";
+            return why + "for a loading screen or cutscene to end. Nothing was sent. Send it again once it has.";
 
         if (chunks[0].Pause > 0)
-            return ReplyCantWait + "out a pause at its start. Nothing was sent. Send it without one.";
+            return why + "out a pause at its start. Nothing was sent. Send it without one.";
 
         return _queue.GoesNext(ChannelCommands.KeyOf(header), ahead, typed)
             ? null
-            : ReplyCantWait + "behind another message. Nothing was sent. Send it again once the Emote Splitter window has closed.";
+            : why + "behind another message. Nothing was sent. Send it again once the Emote Splitter window has closed.";
     }
 
     private const string ReplyCantWait =
         "A reply goes to whoever last sent you a tell when its first part is posted, so it can't wait ";
+
+    private const string ItemCantWait =
+        "The game fills in an item link as its part is posted, so it can't wait ";
 
     internal void Stop() => Svc.Chat.Print($"[Emote Splitter] Stopped; {DropBatch()} part(s) not sent.");
 
