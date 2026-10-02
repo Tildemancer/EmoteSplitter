@@ -27,8 +27,7 @@ internal static unsafe class ActiveChannel
         if (header.Length > 0 || Svc.Commands.Commands.ContainsKey("/ecl1"))
             return true;
 
-        var shell = RaptureShellModule.Instance();
-        var pinned = shell == null ? null : Read(shell);
+        var pinned = Read(RaptureShellModule.Instance());
 
         if (pinned == null)
             return false;
