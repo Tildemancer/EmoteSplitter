@@ -16,16 +16,16 @@ using Chunks = System.Collections.Generic.IReadOnlyList<TildeSplitter.Splitting.
 
 namespace TildeSplitter;
 
-internal sealed class EmoteSplitterModule
+internal sealed class EmoteSplitterModule : IDisposable
 {
     private readonly Configuration _settings;
     private readonly Action _save;
     private readonly SendQueue _queue = new();
     private readonly ReplyPin _pin = new();
 
-    private SubmitInterceptor? _submit;
-    private EnterInterceptor? _enter;
-    private InputCapManager? _inputCap;
+    private readonly SubmitInterceptor _submit;
+    private readonly EnterInterceptor _enter;
+    private readonly InputCapManager _inputCap;
 
     internal SettingsWindow Settings { get; }
 
@@ -52,10 +52,7 @@ internal sealed class EmoteSplitterModule
         _queue.Suspected += OnSuspected;
         _queue.LineSent += _pin.Sent;
         _queue.MessageStarting += _pin.Reset;
-    }
 
-    public void Enable()
-    {
         _queue.IntervalMs = _settings.IntervalMs;
         _queue.FreeIntervalMs = _settings.FreeIntervalMs;
 
@@ -97,7 +94,7 @@ internal sealed class EmoteSplitterModule
         }
     }
 
-    public void Disable()
+    public void Dispose()
     {
         Svc.Framework.Update -= OnFrameworkUpdate;
 
@@ -108,10 +105,10 @@ internal sealed class EmoteSplitterModule
         Svc.ClientState.Logout -= OnLogout;
         Svc.ClientState.Login -= OnLogin;
 
-        // Reverse of Enable
-        _enter?.Dispose();
-        _inputCap?.Dispose();
-        _submit?.Dispose();
+        // Reverse of the constructor
+        _enter.Dispose();
+        _inputCap.Dispose();
+        _submit.Dispose();
     }
 
     private static int[] PausesOf(Chunks chunks) =>
@@ -218,7 +215,7 @@ internal sealed class EmoteSplitterModule
         _queue.IntervalMs = _settings.IntervalMs;
         _queue.FreeIntervalMs = _settings.FreeIntervalMs;
         _save();
-        _inputCap?.Apply();
+        _inputCap.Apply();
     }
 
     private bool OnEnteredLine(string line, byte[] raw)
