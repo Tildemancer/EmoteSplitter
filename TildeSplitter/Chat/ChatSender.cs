@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -20,19 +19,9 @@ internal static unsafe class ChatSender
     // Only the send queue calls this, and the module won't enable without it.
     internal static void Send(string line, bool saveToHistory)
     {
-        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(line);
-
-        if (bytes.Contains((byte)0))
-            throw new InvalidOperationException("Message contained an embedded null byte.");
-
-        byte[] buffer = [.. bytes, 0];
-
-        Utf8String* message = null;
+        var message = Utf8String.FromString(line);
         try
         {
-            fixed (byte* p = buffer)
-                message = Utf8String.FromSequence(p);
-
             Passthrough = true;
             UIModule.Instance()->ProcessChatBoxEntry(message, 0, saveToHistory);
         }
@@ -41,8 +30,7 @@ internal static unsafe class ChatSender
             Passthrough = false;
 
             // The game destructor has to handle this since it's on the game's heap.
-            if (message != null)
-                message->Dtor(true);
+            message->Dtor(true);
         }
     }
 
