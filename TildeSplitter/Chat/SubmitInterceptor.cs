@@ -14,10 +14,10 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
     private readonly Hook<ProcessChatBoxEntryDelegate> _hook;
     private readonly Configuration _settings;
     private readonly Func<string, string, bool> _onSplit;
-    private readonly Func<string, bool, bool> _onPlayerLine;
+    private readonly Func<string, bool, bool, bool> _onPlayerLine;
 
     // onSplit, onPlayerLine: true means it took the line.
-    internal SubmitInterceptor(Configuration settings, Func<string, string, bool> onSplit, Func<string, bool, bool> onPlayerLine)
+    internal SubmitInterceptor(Configuration settings, Func<string, string, bool> onSplit, Func<string, bool, bool, bool> onPlayerLine)
     {
         _settings = settings;
         _onSplit = onSplit;
@@ -36,13 +36,15 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
         {
             if (!ChatSender.Passthrough && message != null && message->ToString() is { Length: > 0 } line)
             {
-                if (ShouldSplit(line, saveToHistory, out var header, out var body, out var marked) && _onSplit(header, body))
+                var payload = ChatSender.HasPayload(message->AsSpan());
+
+                if (ShouldSplit(line, saveToHistory, payload, out var header, out var body, out var marked) && _onSplit(header, body))
                     return;
 
                 if (marked)
                     Svc.Chat.PrintError("[Emote Splitter] That message went out whole, break markers and all. /xllog says why.");
 
-                if (_onPlayerLine(line, saveToHistory))
+                if (_onPlayerLine(line, saveToHistory, payload))
                     return;
             }
         }
@@ -62,7 +64,7 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
         }
     }
 
-    private bool ShouldSplit(string line, bool saveToHistory, out string header, out string body, out bool marked)
+    private bool ShouldSplit(string line, bool saveToHistory, bool payload, out string header, out string body, out bool marked)
     {
         var budget = _settings.Budget;
         var bytes = Encoding.UTF8.GetByteCount(line);
@@ -86,7 +88,7 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
             return false;
         }
 
-        if (ChannelCommands.HasPayload(line))
+        if (payload)
         {
             Svc.Log.Info("Not splitting: contains auto-translate or link payloads.");
             return false;

@@ -226,7 +226,8 @@ internal sealed class EmoteSplitterModule
             _queue.Go();
 
         var bytes = Encoding.UTF8.GetByteCount(line);
-        var payload = ChannelCommands.HasPayload(line);
+        // Less the 0 raw ends in, which Lumina reads as a broken payload.
+        var payload = ChatSender.HasPayload(raw.AsSpan(..^1));
         var splittable = ChannelCommands.TrySplittable(line, out var header, out var body);
 
         // Also takes one that fits but has a break marker, so a refusal can say why and put it back.
@@ -254,7 +255,7 @@ internal sealed class EmoteSplitterModule
     }
 
     // Any line the player sends mid-post takes the place of the next scheduled post instead of posting immediately to avoid 'Your message was not heard' nonsense.
-    private bool OnPlayerLine(string line, bool saveToHistory)
+    private bool OnPlayerLine(string line, bool saveToHistory, bool payload)
     {
         if (!ChannelCommands.TrySplittable(line, out var header, out var body))
         {
@@ -284,7 +285,7 @@ internal sealed class EmoteSplitterModule
         // A link's bytes and an <item> wouldn't survive a later send, so lines with them aren't held.
         // Same with ones the added command pushes past 500 bytes.
         var held = header.Length > 0 ? $"{header} {body}" : body;
-        var canHold = pinned && !ChannelCommands.HasPayload(line)
+        var canHold = pinned && !payload
             && !line.Contains("<item>", StringComparison.Ordinal)
             && Encoding.UTF8.GetByteCount(held) <= Configuration.MaxChunkBytes;
 

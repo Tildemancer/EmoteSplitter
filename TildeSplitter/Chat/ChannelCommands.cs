@@ -68,9 +68,6 @@ internal static partial class ChannelCommands
     internal static bool MightShare(string a, string b) =>
         a == b || a.Length == 0 || b.Length == 0 || a is Tell or Reply && b is Tell or Reply;
 
-    // 0x02/0x03 frame links and auto-translate phrases.
-    internal static bool HasPayload(string line) => line.AsSpan().ContainsAny('\x02', '\x03');
-
     // The game's "not heard" notice only names /tell, /say, /yell and /shout, so these probably don't share the wait.
     // Emote drops lines with no feedback, a macro of 15 /em lines only posted ~3 of them with no warning.
     // Novice network and "" wait along with those until shown otherwise.

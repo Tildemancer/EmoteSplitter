@@ -2,6 +2,7 @@ using System;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Text.ReadOnly;
 
 namespace TildeSplitter.Chat;
 
@@ -64,6 +65,17 @@ internal static unsafe class ChatSender
         {
             str->Dtor(true);
         }
+    }
+
+    // EVERY payload counts, INCLUDING broken ones.
+    // It's the bytes that matter here, not the macro type.
+    internal static bool HasPayload(ReadOnlySpan<byte> raw)
+    {
+        foreach (var payload in new ReadOnlySeStringSpan(raw))
+            if (payload.Type != ReadOnlySePayloadType.Text)
+                return true;
+
+        return false;
     }
 
     internal static AtkComponentTextInput* ChatLogInput() =>
