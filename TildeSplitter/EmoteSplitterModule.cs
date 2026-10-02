@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -40,7 +39,7 @@ internal sealed class EmoteSplitterModule : IDisposable
         windows.AddWindow(Settings);
         windows.AddWindow(new PostingWindow(_queue, _pin, Stop));
 
-        _queue.Sender = line => ChatSender.Send(line, saveToHistory: _toHistory.Remove(line));
+        _queue.Sender = ChatSender.Send;
         _queue.Rewrite = _pin.Rewrite;
         // GPose sets WatchingCutscene, so InWorld is false there.
         // C2's GposeActive reads the same flag, so I do it that way too. Thanks Infi
@@ -231,8 +230,16 @@ internal sealed class EmoteSplitterModule : IDisposable
 
         // Also takes one that fits but has a break marker, so a refusal can say why and put it back.
         // Not with a link or auto-translate phrase, since the game sends those in one piece and taking the line would drop them...
+        // Anything not split is a typed line, and the send hook never sees the box's own, so the hold check runs here.
         if (bytes <= _settings.Budget && (payload || !splittable || MessageSplitter.FindBreak(body).At < 0))
-            return false;
+        {
+            if (!OnPlayerLine(line, saveToHistory: true, payload))
+                return false;
+
+            // Held, so it goes in the history now; sending it later with ProcessChatBoxEntry's history flag crashes the game
+            ChatSender.SaveToHistory(raw);
+            return true;
+        }
 
         Svc.Log.Info($"Enter on a line to split: {bytes} bytes, budget {_settings.Budget}.");
 
@@ -291,14 +298,9 @@ internal sealed class EmoteSplitterModule : IDisposable
         if (!_queue.Typed(held, channel, NowMs, canHold))
             return false;
 
-        if (saveToHistory)
-            _toHistory.Add(held);
-
         Svc.Log.Info($"Held a line typed mid-post to go next, channel \"{channel}\".");
         return true;
     }
-
-    private readonly HashSet<string> _toHistory = new(ReferenceEqualityComparer.Instance);
 
     // putBack is null when another plugin sent it.
     private bool OnMessageNeedsSplitting(string header, string body, byte[]? putBack = null)
@@ -366,7 +368,6 @@ internal sealed class EmoteSplitterModule : IDisposable
     private void EndBatch()
     {
         _pin.Reset();
-        _toHistory.Clear();
         _finished = null;
     }
 

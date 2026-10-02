@@ -12,13 +12,13 @@ internal static unsafe class ChatSender
     [ThreadStatic] internal static bool Passthrough;
 
     // Framework thread only.
-    internal static void Send(string line, bool saveToHistory)
+    internal static void Send(string line)
     {
         var message = Utf8String.FromString(line);
         try
         {
             Passthrough = true;
-            UIModule.Instance()->ProcessChatBoxEntry(message, 0, saveToHistory);
+            UIModule.Instance()->ProcessChatBoxEntry(message, 0, false);
         }
         finally
         {
