@@ -75,15 +75,18 @@ internal static partial class ChannelCommands
         key is "Free Company" or Party or Alliance or "PvP Team" or "Echo" || key.Contains(Linkshell);
 
     // A /t or /tell, whether or not its target reads as a name.
-    internal static bool IsTell(string line) =>
-        CommandRegex().Match(line) is { Success: true } match && Channels.GetValueOrDefault(match.Groups["cmd"].Value) == Tell;
+    internal static bool IsTell(string line) => line.StartsWith('/') && Channels.GetValueOrDefault(SplitCommand(line).Command) == Tell;
 
-    [GeneratedRegex(@"^\s*(?<target>[\p{L}'\-]+\s+[\p{L}'\-]+(?:@[\p{L}]+)?)\s+(?<rest>.*)$",
+    [GeneratedRegex(@"^(?<target>[\p{L}'\-]+\s+[\p{L}'\-]+(?:@[\p{L}]+)?)\s+(?<rest>.*)$",
         RegexOptions.Singleline)]
     private static partial Regex TellTargetRegex();
 
-    [GeneratedRegex(@"^/(?<cmd>\p{L}+[0-9]*)(?:\s+(?<rest>.*))?$", RegexOptions.Singleline)]
-    private static partial Regex CommandRegex();
+    // A null separator splits at any whitespace, including the full width space.
+    private static (string Command, string Body) SplitCommand(string line)
+    {
+        var parts = line[1..].Split(null, 2);
+        return (parts[0], parts.Length > 1 ? parts[1].TrimStart() : "");
+    }
 
     internal static bool TrySplittable(string line, out string header, out string body)
     {
@@ -99,12 +102,7 @@ internal static partial class ChannelCommands
             return true;
         }
 
-        var match = CommandRegex().Match(line);
-        if (!match.Success)
-            return false;
-
-        var command = match.Groups["cmd"].Value;
-        var rest = match.Groups["rest"].Value;
+        var (command, rest) = SplitCommand(line);
 
         var name = Channels.GetValueOrDefault(command);
         if (name == Tell)
