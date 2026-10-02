@@ -464,7 +464,7 @@ internal sealed class EmoteSplitterModule : IDisposable
 
         // Only ours if the message being posted goes to the notice's channel.
         // "" could be any of them, see MightShare
-        if (LogMessages.ChannelOf(logMessageId) is { } channel && current.Length > 0 && !current.Contains(channel))
+        if (!LogMessages.About(logMessageId, current))
             return;
 
         var dropped = DropMessage();

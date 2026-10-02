@@ -24,6 +24,12 @@ internal static class LogMessages
         726 => ChannelCommands.Linkshell,
         728 => ChannelCommands.Party,
         924 => ChannelCommands.Alliance,
+        3872 or 3873 or 3874 or 9743 => ChannelCommands.Tell,
         _ => null,
     };
+
+    // Whether a refusal can be about the message currently posting.
+    // 9743 is theory.
+    internal static bool About(uint id, string current) =>
+        ChannelOf(id) is not { } channel || current.Contains(channel) || ChannelCommands.MightShare(current, channel);
 }
