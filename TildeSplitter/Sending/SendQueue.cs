@@ -28,6 +28,10 @@ public sealed class SendQueue
         public bool Started;
         public bool Typed;
         public long PausedFrom;
+
+        // A message's first part goes on the Enter that sent it, each part after it on its own click. I know this is kind of a regression from TildeTools, but...
+        // On the message, that way a typed line or cut-in or a held /r can't spend it.
+        public bool Clicked;
     }
 
     private readonly List<Message> _messages = [];
@@ -40,9 +44,6 @@ public sealed class SendQueue
     private long _lastPartAt = -MaxIntervalMs;
     private long _lastTypedAt = -MaxIntervalMs;
     private bool _queueWentLast;
-
-    // A message's first part goes on the Enter that sent it, each part after it on its own click. I know this is kind of a regression from TildeTools, but...
-    private bool _go;
 
     public const int ThrottleClaimWindowMs = 3000;
 
@@ -86,9 +87,9 @@ public sealed class SendQueue
 
     public bool LastSentWasTyped => _lastSent?.From.Typed == true;
 
-    public bool AwaitingGo => _messages.Count > 0 && _suspect == null && _messages[0].Started && !_go;
+    public bool AwaitingGo => _messages.Count > 0 && _suspect == null && _messages[0] is { Started: true, Clicked: false };
 
-    public void Go() => _go = true;
+    public void Go() => _messages.Find(message => message.Started)?.Clicked = true;
 
     // The channel of the message a cut-in would go in front of (with the last started one still queued).
     // CanCutIn checks it so nothing cuts in front of /r.
@@ -207,9 +208,11 @@ public sealed class SendQueue
             return;
 
         _suspect = null;
-        _go = true;
         if (!resend)
+        {
+            Go();
             return;
+        }
 
         var part = (suspect.Line, suspect.Part, suspect.Of, 0);
 
@@ -217,7 +220,10 @@ public sealed class SendQueue
         if (!_messages.Contains(suspect.From))
             _messages.Insert(0, new Message(suspect.From.Channel, [part]) { Typed = suspect.From.Typed });
         else
+        {
             suspect.From.Parts.Insert(0, part);
+            suspect.From.Clicked = true;
+        }
     }
 
     public void Update(long nowMs)
@@ -232,10 +238,8 @@ public sealed class SendQueue
             return;
         }
 
-        if (_messages[0].Started && !_go)
+        if (_messages[0] is { Started: true, Clicked: false })
             return;
-
-        _go = false;
 
         if (NextLine() is { } line)
             SendHead(line, nowMs);
@@ -273,7 +277,7 @@ public sealed class SendQueue
         // Set before sending.
         // A refusal inside the call drops the message and clears this, and that needs to stick.
         _lastSent = (message, line, part.Part, part.Of);
-        (_lastSentAt, message.PausedFrom) = (nowMs, nowMs);
+        (_lastSentAt, message.PausedFrom, message.Clicked) = (nowMs, nowMs, false);
 
         var limited = !ChannelCommands.Unlimited(message.Channel);
         // Only a typed message's first part is the typed line, the rest keep the post's pace.
