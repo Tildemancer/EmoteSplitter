@@ -269,7 +269,7 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
         var dirty = Widgets.Toggle("Offer to resend on 'Your message was not heard...'", settings.RetryOnThrottle,
             settings, static (s, v) => s.RetryOnThrottle = v);
 
-        ImGui.TextDisabled("When that notice comes within 3 seconds of a part (or whatever ThrottleClaimWindowMs ends up being) posting pauses to ask whether to post the part again. Other refusals drop the rest of the message.");
+        ImGui.TextDisabled($"When that notice comes within {SendQueue.ThrottleClaimWindowMs / 1000} seconds of a part, posting pauses to ask whether to post the part again. Other refusals drop the rest of the message.");
 
         dirty |= Widgets.Toggle("Post Feedback", settings.ShowProgress, settings, static (s, v) => s.ShowProgress = v);
 
