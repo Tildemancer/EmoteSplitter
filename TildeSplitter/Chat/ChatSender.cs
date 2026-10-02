@@ -5,18 +5,12 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace TildeSplitter.Chat;
 
-// ProcessChatBoxEntry is sig-scanned and can be null post-patch.
-// If called null, it crashes the game. Yikes!
 internal static unsafe class ChatSender
 {
     // Lets our own sends past our send hook.
     [ThreadStatic] internal static bool Passthrough;
 
-    internal static bool Available => UIModule.MemberFunctionPointers.ProcessChatBoxEntry != null;
-
     // Framework thread only.
-    // No Available check
-    // Only the send queue calls this, and the module won't enable without it.
     internal static void Send(string line, bool saveToHistory)
     {
         var message = Utf8String.FromString(line);

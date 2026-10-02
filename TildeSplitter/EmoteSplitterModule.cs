@@ -29,14 +29,9 @@ internal sealed class EmoteSplitterModule
 
     internal SettingsWindow Settings { get; }
 
-    public string? UnavailableReason => ChatSender.Available
-        ? null
-        : "The game's chat-send function could not be found for this game version.";
-
     private static long NowMs => Environment.TickCount64;
 
     // Hooked up once, posting window included.
-    // While it's off, the queue is empty and nothing calls Update.
     internal EmoteSplitterModule(Configuration settings, Action save, WindowSystem windows)
     {
         _settings = settings;
@@ -70,8 +65,8 @@ internal sealed class EmoteSplitterModule
         Svc.ClientState.Logout += OnLogout;
         Svc.ClientState.Login += OnLogin;
 
-        _inputCap = new InputCapManager(_settings);
         _submit = new SubmitInterceptor(_settings, (header, body) => OnMessageNeedsSplitting(header, body), OnPlayerLine);
+        _inputCap = new InputCapManager(_settings);
         _enter = new EnterInterceptor(OnEnteredLine);
 
         Svc.Framework.Update += OnFrameworkUpdate;
@@ -115,11 +110,8 @@ internal sealed class EmoteSplitterModule
 
         // Reverse of Enable
         _enter?.Dispose();
-        _submit?.Dispose();
         _inputCap?.Dispose();
-
-        (_enter, _submit, _inputCap) = (null, null, null);
-        (_replyTo, _droppedAtLogout) = (null, 0);
+        _submit?.Dispose();
     }
 
     private static int[] PausesOf(Chunks chunks) =>

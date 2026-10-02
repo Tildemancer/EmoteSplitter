@@ -22,10 +22,7 @@ public sealed class Plugin : IDalamudPlugin
         _config = Svc.Pi.GetPluginConfig() as Configuration ?? new Configuration();
         _splitter = new EmoteSplitterModule(_config, Save, _windows);
 
-        if (_splitter.UnavailableReason is { } reason)
-            Svc.Chat.PrintError($"[Emote Splitter] {reason}");
-        else
-            _splitter.Enable();
+        _splitter.Enable();
 
         Svc.Pi.UiBuilder.Draw += _windows.Draw;
         Svc.Pi.UiBuilder.OpenConfigUi += _splitter.Settings.Toggle;
