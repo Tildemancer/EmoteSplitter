@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using Lumina.Excel.Sheets;
+using TildeSplitter.Chat;
 
 namespace TildeSplitter;
 
@@ -18,6 +21,9 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin(IDalamudPluginInterface pluginInterface)
     {
         pluginInterface.Create<Svc>();
+
+        ChannelCommands.AddClientNames(Svc.Data.GetExcelSheet<TextCommand>()
+            .Select(c => new[] { c.Command, c.ShortCommand, c.Alias, c.ShortAlias }.Select(n => n.ExtractText())));
 
         _config = Svc.Pi.GetPluginConfig() as Configuration ?? new Configuration();
         _splitter = new EmoteSplitterModule(_config, Save, _windows);
