@@ -38,7 +38,7 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
             {
                 var payload = ChatSender.HasPayload(message->AsSpan());
 
-                if (ShouldSplit(line, saveToHistory, payload, out var header, out var body, out var marked) && _onSplit(header, body))
+                if (ShouldSplit(line, payload, out var header, out var body, out var marked) && _onSplit(header, body))
                     return;
 
                 if (marked)
@@ -64,7 +64,7 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
         }
     }
 
-    private bool ShouldSplit(string line, bool saveToHistory, bool payload, out string header, out string body, out bool marked)
+    private bool ShouldSplit(string line, bool payload, out string header, out string body, out bool marked)
     {
         var budget = _settings.Budget;
         var bytes = Encoding.UTF8.GetByteCount(line);
@@ -79,10 +79,11 @@ internal sealed unsafe class SubmitInterceptor : IDisposable
 
         Svc.Log.Info($"Message to split submitted: {bytes} bytes, budget {budget}, break marker {marked}.");
 
-        // A bare line that fits, splits, acquits -- okay I swear I'm done -- at a marker only from the default chatbox.
+        // Any bare line that fits is confidently a plugin's here, the default box never reaches hook and the Enter hook splits those at a marker.
+        // Left so it can pass on accidentally handling anything it's not meant to.
         // XIM's foray and party finder tells go bare around a target it set. I think.
         // For the record, I haven't tested foray and party finder tells and I don't intend to. If it breaks I'll fix it, /shrug
-        if (bytes <= budget && header.Length == 0 && !saveToHistory)
+        if (bytes <= budget && header.Length == 0)
         {
             Svc.Log.Info("Not splitting: a bare line from another plugin.");
             return false;
