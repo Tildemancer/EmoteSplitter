@@ -48,7 +48,7 @@ internal static unsafe class ActiveChannel
         if (type is not (17 or 18))
             return type >= 0 && type < Commands.Length ? Commands[type] : null;
 
-        // The editbox writes out /tell Name@World itself, this is for WS's None type.
+        // In tell mode the box hands its line bare, so the target comes from the shell instead.
         var name = shell->TellName.ToString();
         var world = shell->TellWorld.ToString();
         return name.Length > 0 && world.Length > 0 ? $"/t {name}@{world}" : null;
