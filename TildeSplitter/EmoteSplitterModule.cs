@@ -121,6 +121,9 @@ internal sealed class EmoteSplitterModule
         "That message has to be split, and it contains an auto-translate phrase or item link, " +
         "which splitting would corrupt. Nothing was sent.";
 
+    private const string UnsplittableRefusal =
+        "That message is too long for the game and this isn't a recognized channel. Nothing was sent.";
+
     private bool TrySplit(string header, string body, out Chunks chunks, out string? reason)
     {
         (chunks, reason) = ([], null);
@@ -238,9 +241,9 @@ internal sealed class EmoteSplitterModule
         Svc.Log.Info($"Enter on a line to split: {bytes} bytes, budget {_settings.Budget}.");
 
         // If it's not handed back the game will take and drop it silently. Incredible.
-        if (payload)
+        if (payload || (!splittable && bytes > Configuration.MaxChunkBytes))
         {
-            Refuse(PayloadRefusal);
+            Refuse(payload ? PayloadRefusal : UnsplittableRefusal);
             _refused = raw;
             return true;
         }
