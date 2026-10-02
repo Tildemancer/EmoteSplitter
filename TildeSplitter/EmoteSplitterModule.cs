@@ -384,7 +384,7 @@ internal sealed class EmoteSplitterModule
     private void OnLogout(int type, int code)
     {
         _droppedAtLogout += DropBatch();
-        ReplyTo(null);
+        _replyTo = null;
     }
 
     // Reported on login, since anything printed at logout should be gone before anyone can read it.
@@ -510,11 +510,11 @@ internal sealed class EmoteSplitterModule
 
             // An incoming tell we can't read still moved /r, so who it goes to is unknown until the next tell or an echo...
             if (kind == XivChatType.TellIncoming)
-                ReplyTo(person);
+                _replyTo = person;
             else if (person != null && _pin.Echoed(person, message.OriginalMessage.ExtractText()))
             {
                 Svc.Log.Info("Reply batch pinned to its recipient.");
-                ReplyTo(person);
+                _replyTo = person;
             }
         }
         catch (Exception ex)
@@ -522,16 +522,8 @@ internal sealed class EmoteSplitterModule
             Svc.Log.Error(ex, "Could not read who a tell was with.");
 
             if (kind == XivChatType.TellIncoming)
-                ReplyTo(null);
+                _replyTo = null;
         }
-    }
-
-    private void ReplyTo(string? person)
-    {
-        if (person == _replyTo)
-            return;
-
-        _replyTo = person;
     }
 
     // No echo means they're offline or there's nobody to reply to.
