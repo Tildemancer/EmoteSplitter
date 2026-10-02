@@ -61,7 +61,6 @@ public sealed class Configuration : IPluginConfiguration
 
     public int FreeIntervalMs { get; set => field = Math.Clamp(value, 0, SendQueue.MaxIntervalMs); } = MacroPaceMs;
 
-    // Configurable post ceiling.
     public int MaxChunksPerMessage { get; set => field = Math.Clamp(value, MinChunksPerMessage, MaxChunksPerMessageCeiling); } = 20;
 
     public bool RetryOnThrottle { get; set; } = true;

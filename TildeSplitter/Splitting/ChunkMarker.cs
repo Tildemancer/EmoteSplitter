@@ -33,7 +33,7 @@ public sealed class ChunkMarker
 {
     public string Text { get; set; } = string.Empty;
 
-    // Checked because a hand-edited config's out-of-range value would index past the settings tab's names. Thanks MidoriKami
+    // Checked because a hand-edited config's out-of-range value would index past SettingsWindow's SlotNames and RepeatNames. Thanks MidoriKami
     public MarkerSlot Slot { get; set => field = Enum.IsDefined(value) ? value : MarkerSlot.AfterOoc; } = MarkerSlot.AfterOoc;
 
     public MarkerRepeat Repeat { get; set => field = Enum.IsDefined(value) ? value : MarkerRepeat.All; } = MarkerRepeat.All;

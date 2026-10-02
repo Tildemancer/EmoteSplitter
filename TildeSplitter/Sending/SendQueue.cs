@@ -29,7 +29,7 @@ public sealed class SendQueue
         public bool Typed;
         public long PausedFrom;
 
-        // A message's first part goes on the Enter that sent it, each part after it on its own click. I know this is kind of a regression from TildeTools, but...
+        // A message's first part goes once it's next (or the Enter that sent it, if nothing's queued ahead), each part after it on click. I know this is kind of a regression from TildeTools, but...
         // On the message, that way a typed line or cut-in or a held /r can't spend it.
         public bool Clicked;
     }
