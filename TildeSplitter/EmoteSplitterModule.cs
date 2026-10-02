@@ -164,7 +164,7 @@ internal sealed class EmoteSplitterModule : IDisposable
             return true;
 
         reason = $"That message needs {chunks.Count} parts, over the limit of {_settings.MaxChunksPerMessage}. " +
-                 "Nothing was sent. Raise the limit in /tt if you meant it.";
+                 "Nothing was sent. Raise the limit in /splitter if you meant it.";
         chunks = [];
         return false;
     }
