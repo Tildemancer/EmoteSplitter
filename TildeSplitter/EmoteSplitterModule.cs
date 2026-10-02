@@ -124,7 +124,7 @@ internal sealed class EmoteSplitterModule
     private const string UnsplittableRefusal =
         "That message is too long for the game and this isn't a recognized channel. Nothing was sent.";
 
-    private bool TrySplit(string header, string body, out Chunks chunks, out string? reason)
+    private bool TrySplit(ref string header, string body, out Chunks chunks, out string? reason)
     {
         (chunks, reason) = ([], null);
 
@@ -178,11 +178,10 @@ internal sealed class EmoteSplitterModule
         Svc.Chat.PrintError($"[Emote Splitter] {reason}");
     }
 
-    private void Queue(Chunks chunks, string how, bool ahead, bool typed)
+    private void Queue(string header, Chunks chunks, bool ahead, bool typed)
     {
-        ChannelCommands.TrySplittable(chunks[0].Line, out var header, out _);
         var channel = ChannelCommands.KeyOf(header);
-        Svc.Log.Info($"Queued {chunks.Count} chunk(s) {how}, channel \"{channel}\", ahead {ahead}, typed {typed}.");
+        Svc.Log.Info($"Queued {chunks.Count} chunk(s), channel \"{channel}\", ahead {ahead}, typed {typed}.");
         _queue.Enqueue(chunks.Select(c => c.Line), channel, ahead, PausesOf(chunks), NowMs, typed);
 
         if (_settings.ShowProgress && chunks.Count > 1)
@@ -193,9 +192,9 @@ internal sealed class EmoteSplitterModule
     private bool CanCutIn =>
         _queue.State != SendQueueState.Asking && _queue.Underway != ChannelCommands.Reply;
 
-    private string? CantWait(Chunks chunks, bool ahead, bool typed)
+    private string? CantWait(string header, Chunks chunks, bool ahead, bool typed)
     {
-        if (!ChannelCommands.TrySplittable(chunks[0].Line, out var header, out _) || !ReplyPin.IsReplyHeader(header))
+        if (!ReplyPin.IsReplyHeader(header))
             return null;
 
         if (!_queue.CanSend())
@@ -311,10 +310,10 @@ internal sealed class EmoteSplitterModule
         var fits = whole <= _settings.Budget;
 
         var ahead = CanCutIn;
-        if (TrySplit(header, body, out var chunks, out var reason)
-            && (reason = CantWait(chunks, ahead, fits)) == null)
+        if (TrySplit(ref header, body, out var chunks, out var reason)
+            && (reason = CantWait(header, chunks, ahead, fits)) == null)
         {
-            Queue(chunks, "through the send hook", ahead, fits);
+            Queue(header, chunks, ahead, fits);
 
             // It was taken at Enter, so the game never saw the line to put it in its editbox history.
             if (putBack != null)
