@@ -57,7 +57,6 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
 
         ImGui.TextDisabled("How long the text input field is for the default vanilla chat editbox.");
 
-
         return dirty;
     }
 
