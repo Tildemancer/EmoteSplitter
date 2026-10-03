@@ -17,7 +17,7 @@ internal sealed class PostingWindow : Window
 
     // NoFocusOnAppearing so it doesn't steal the chat box from someone mid-sentence.
     internal PostingWindow(SendQueue queue, ReplyPin pin, Action stop)
-        : base("Emote Splitter###tildesplitter-posting",
+        : base("Emote Splitter###emotesplitter-posting",
             ImGuiWindowFlags.AlwaysAutoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoFocusOnAppearing | ImGuiWindowFlags.NoNav)
     {
         (_queue, _pin, _stop) = (queue, pin, stop);
