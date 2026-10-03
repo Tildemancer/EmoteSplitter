@@ -244,7 +244,8 @@ internal sealed class EmoteSplitterModule : IDisposable
         if (line.Length == 0 && _queue.AwaitingGo)
             _queue.Go();
 
-        var bytes = Encoding.UTF8.GetByteCount(line);
+        // The editbox measures in raw bytes. better safe than sorry.
+        var bytes = raw.Length - 1;
         // Less the 0 raw ends in, which Lumina reads as a broken payload.
         var payload = ChatSender.HasPayload(raw.AsSpan(..^1));
         var splittable = ChannelCommands.TrySplittable(line, out var header, out var body);
