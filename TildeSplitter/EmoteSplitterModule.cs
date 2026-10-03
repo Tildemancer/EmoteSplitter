@@ -35,7 +35,10 @@ internal sealed class EmoteSplitterModule : IDisposable
     {
         _settings = settings;
         _save = save;
-        Settings = new SettingsWindow(settings, OnSettingsChanged);
+        Settings = new SettingsWindow(settings, OnSettingsChanged)
+        {
+            SizeConstraints = new() { MinimumSize = new(420, 400), MaximumSize = new(9999, 9999) },
+        };
         windows.AddWindow(Settings);
         windows.AddWindow(new PostingWindow(_queue, _pin, Stop));
 
