@@ -13,12 +13,12 @@ internal sealed unsafe class EnterInterceptor : IDisposable
     // byte* where the game's signature has CStringPointer, they pass identically.
     private delegate InputCallbackResult InputCallback(AtkUnitBase* addon, InputCallbackType type, byte* raw, byte* evaluated, int eventKind);
 
-    private readonly Func<string, byte[], bool> _onTake;
+    private readonly Func<string, byte[], InputCallbackResult?> _onTake;
 
     private Hook<InputCallback>? _hook;
     private bool _warned;
 
-    internal EnterInterceptor(Func<string, byte[], bool> onTake)
+    internal EnterInterceptor(Func<string, byte[], InputCallbackResult?> onTake)
     {
         _onTake = onTake;
 
@@ -69,13 +69,14 @@ internal sealed unsafe class EnterInterceptor : IDisposable
                 var input = ((AddonChatLog*)addon)->TextInput;
 
                 // Passes RawString too, null-terminated, because decoding to a string breaks an auto-translated phrase's macro.
-                if (_onTake(MemoryHelper.ReadStringNullTerminated((nint)evaluated), [.. input->RawString.AsSpan(), 0]))
+                if (_onTake(MemoryHelper.ReadStringNullTerminated((nint)evaluated), [.. input->RawString.AsSpan(), 0]) is { } result)
                 {
                     // ClearText doesn't reset the character count.
-                    if (AtkComponentTextInput.MemberFunctionPointers.UpdateCharacterCount != null)
+                    if (result == InputCallbackResult.ClearText && AtkComponentTextInput.MemberFunctionPointers.UpdateCharacterCount != null)
                         input->UpdateCharacterCount(0, 0);
 
-                    return InputCallbackResult.ClearText;
+                    // None leaves the line in the box as it was typed, unsent
+                    return result;
                 }
             }
         }

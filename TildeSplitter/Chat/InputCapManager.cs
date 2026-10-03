@@ -103,7 +103,10 @@ internal sealed unsafe class InputCapManager : IDisposable
         // A focused box keeps its own copy of the line and puts it back when it loses focus, so focus goes first
         RaptureAtkModule.Instance()->ClearFocus();
 
-        byte[] line = [.. input->RawString.AsSpan(), 0];
+        // SetText of a phrase's raw bytes leaves it editable inside, and a cut can land mid-phrase, so a line holding one is emptied instead for safety.
+        // Man, they said this shit was dangerous, and I didn't listen...
+        // fuck me.
+        byte[] line = ChatSender.HasPayload(input->RawString.AsSpan()) ? [0] : [.. input->RawString.AsSpan(), 0];
         fixed (byte* text = line)
             input->SetText(text);
     }
