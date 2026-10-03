@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using TildeSplitter.Chat;
+using EmoteSplitter.Chat;
 using Part = (string Line, int Part, int Of, int WaitMs);
 
-namespace TildeSplitter.Sending;
+namespace EmoteSplitter.Sending;
 
 public enum SendQueueState
 {

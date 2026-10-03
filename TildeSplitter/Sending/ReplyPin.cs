@@ -1,7 +1,7 @@
 using System;
-using TildeSplitter.Chat;
+using EmoteSplitter.Chat;
 
-namespace TildeSplitter.Sending;
+namespace EmoteSplitter.Sending;
 
 // /r needs to use /tell Name@World after the first /r, which can be grabbed from reading who got it (echo). Otherwise incoming tells hijack the outbound posts mid-stream. Yikes!
 public sealed class ReplyPin

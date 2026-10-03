@@ -8,12 +8,12 @@ using Dalamud.Game.Text.SeStringHandling.Payloads;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-using TildeSplitter.Chat;
-using TildeSplitter.Sending;
-using TildeSplitter.Splitting;
-using Chunks = System.Collections.Generic.IReadOnlyList<TildeSplitter.Splitting.SplitPart>;
+using EmoteSplitter.Chat;
+using EmoteSplitter.Sending;
+using EmoteSplitter.Splitting;
+using Chunks = System.Collections.Generic.IReadOnlyList<EmoteSplitter.Splitting.SplitPart>;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
 internal sealed class EmoteSplitterModule : IDisposable
 {

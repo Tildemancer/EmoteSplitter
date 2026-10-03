@@ -5,16 +5,16 @@ using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Lumina.Excel.Sheets;
-using TildeSplitter.Chat;
+using EmoteSplitter.Chat;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
 public sealed class Plugin : IDalamudPlugin
 {
-    private static readonly string[] CommandNames = ["/splitter", "/split", "/tsplit", "/tsplitter"];
+    private static readonly string[] CommandNames = ["/splitter", "/es", "/esplit", "/esplitter"];
 
     private readonly Configuration _config;
-    private readonly WindowSystem _windows = new("TildeSplitter");
+    private readonly WindowSystem _windows = new("EmoteSplitter");
     private readonly EmoteSplitterModule _splitter;
     private readonly List<string> _commands = [];
 
@@ -35,7 +35,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             var info = new CommandInfo(OnCommand)
             {
-                HelpMessage = "Open TildeSplitter\n/splitter cancel - Stop a message that's mid-send",
+                HelpMessage = "Open Emote Splitter\n/splitter cancel - Stop a message that's mid-send",
                 ShowInHelp = name == CommandNames[0],
             };
 

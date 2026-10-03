@@ -3,14 +3,14 @@ using System.Linq;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using TildeSplitter.Chat;
-using TildeSplitter.Sending;
-using TildeSplitter.Splitting;
-using static TildeSplitter.Widgets;
+using EmoteSplitter.Chat;
+using EmoteSplitter.Sending;
+using EmoteSplitter.Splitting;
+using static EmoteSplitter.Widgets;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
-internal sealed class SettingsWindow(Configuration settings, Action onChanged) : Window("TildeSplitter###tildesplitter-settings")
+internal sealed class SettingsWindow(Configuration settings, Action onChanged) : Window("Emote Splitter###emotesplitter-settings")
 {
     public override void Draw()
     {

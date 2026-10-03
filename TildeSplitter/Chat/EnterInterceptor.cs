@@ -6,7 +6,7 @@ using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 internal sealed unsafe class EnterInterceptor : IDisposable
 {

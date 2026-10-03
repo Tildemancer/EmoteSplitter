@@ -4,7 +4,7 @@ using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
 internal static class Widgets
 {

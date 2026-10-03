@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 internal static partial class ChannelCommands
 {

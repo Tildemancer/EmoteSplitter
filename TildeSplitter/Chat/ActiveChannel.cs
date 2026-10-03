@@ -1,6 +1,6 @@
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 // A bare line goes wherever the chat box is when each part leaves, that way switching mid-post follows the client.
 // This turns the box's channel into a command that every part can carry.

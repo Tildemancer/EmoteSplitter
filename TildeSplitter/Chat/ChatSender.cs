@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Text.ReadOnly;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 internal static unsafe class ChatSender
 {

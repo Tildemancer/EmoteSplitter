@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TildeSplitter.Splitting;
+namespace EmoteSplitter.Splitting;
 
 // Configuration saves one as Split.
 // Each split's set field is internal, so Json.NET leaves them out of the saved file.

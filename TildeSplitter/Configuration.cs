@@ -1,10 +1,10 @@
 using System;
 using Dalamud.Configuration;
 
-using TildeSplitter.Sending;
-using TildeSplitter.Splitting;
+using EmoteSplitter.Sending;
+using EmoteSplitter.Splitting;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
 [Serializable]
 public sealed class Configuration : IPluginConfiguration

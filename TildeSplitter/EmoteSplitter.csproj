@@ -7,12 +7,12 @@
     <Platforms>x64</Platforms>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(MSBuildProjectDirectory)\..\build\TildeSplitter</OutputPath>
+    <OutputPath>$(MSBuildProjectDirectory)\..\build\EmoteSplitter</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
     <Author>Tildemancer</Author>
-    <Name>TildeSplitter</Name>
+    <Name>Emote Splitter</Name>
     <Punchline>Type past the chat limit.</Punchline>
     <Description>Type past the chat limit. Long messages are split and sent in order.</Description>
     <Tags>Social;Utility;Roleplay</Tags>

@@ -3,7 +3,7 @@ using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 // Re-applies on addon events since the game will rebuild the component and resets the cap in the process.
 internal sealed unsafe class InputCapManager : IDisposable

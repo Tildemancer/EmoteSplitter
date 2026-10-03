@@ -2,10 +2,10 @@ using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Windowing;
-using TildeSplitter.Chat;
-using TildeSplitter.Sending;
+using EmoteSplitter.Chat;
+using EmoteSplitter.Sending;
 
-namespace TildeSplitter;
+namespace EmoteSplitter;
 
 internal sealed class PostingWindow : Window
 {

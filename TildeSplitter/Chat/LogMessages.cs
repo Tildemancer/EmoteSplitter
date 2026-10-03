@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 // LogMessage rows the send queue acts on, see EmoteSplitterModule.OnLogMessage
 internal static class LogMessages

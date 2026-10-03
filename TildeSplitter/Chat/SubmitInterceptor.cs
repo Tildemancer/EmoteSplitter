@@ -1,11 +1,11 @@
 using System;
 using System.Text;
 using Dalamud.Hooking;
-using TildeSplitter.Splitting;
+using EmoteSplitter.Splitting;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
 
-namespace TildeSplitter.Chat;
+namespace EmoteSplitter.Chat;
 
 internal sealed unsafe class SubmitInterceptor : IDisposable
 {

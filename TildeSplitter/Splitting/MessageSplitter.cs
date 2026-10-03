@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 
-namespace TildeSplitter.Splitting;
+namespace EmoteSplitter.Splitting;
 
 public sealed class SplitBudgetException(string message) : Exception(message);
 
