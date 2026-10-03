@@ -17,6 +17,14 @@ internal static unsafe class ChatSender
         var message = Utf8String.FromString(line);
         try
         {
+            // IN THEORY, this is redundant. since the splitter, the hold check and the refusals already keep every line at 500 bytes or under; nothing should ever reach it and if this ever fires, something has gone horribly wrong.
+            // THAT SAID, defensive design and all, I'm electing to keep it even if it's clumsy, even if it sucks ass, even if it's completely impossible to trigger, because the stakes of not having this or something going wrong are just too high. Today's little 1kb experiment has put the fear of God into me, so this is going to be a peace of mind indulgence.
+            if (message->AsSpan().Length > Configuration.MaxChunkBytes)
+            {
+                Svc.Log.Error($"Stopped a {message->AsSpan().Length}-byte line before it went out.");
+                return;
+            }
+
             Passthrough = true;
             UIModule.Instance()->ProcessChatBoxEntry(message, 0, false);
         }
