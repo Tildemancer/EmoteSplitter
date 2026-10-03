@@ -83,6 +83,17 @@ internal sealed unsafe class InputCapManager : IDisposable
         input->SetMaxByte((int)_originalMaxByte);
         input->SetMaxChar((int)_originalMaxChar);
 
+        // >>> DANGER!!! <<<
+        // We MUST reset the text limit, the editbox WILL accept up to 1kb of text and SEND IT IN A WAY THAT THE SERVER CAN SEE!!!! Over that can be sent, but presumably rejects it.
+        // I don't know why, just that it works.
+        var raw = input->RawString.AsSpan();
+        if (raw.Length > _originalMaxByte)
+        {
+            byte[] line = [.. raw, 0];
+            fixed (byte* text = line)
+                input->SetText(text);
+        }
+
         // Otherwise every ChatLog event would set them again while unlocking is off.
         _captured = false;
     }
