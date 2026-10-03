@@ -1,6 +1,7 @@
 using System;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 
 namespace EmoteSplitter.Chat;
@@ -64,6 +65,8 @@ internal sealed unsafe class InputCapManager : IDisposable
         if (_originalMaxChar != 0)
             input->SetMaxChar(targetBytes);
 
+        Truncate(input, targetBytes);
+
         var applied = input->ComponentTextData.MaxByte;
         if (applied == targetBytes)
             Svc.Log.Info($"Chat input limit set to {applied} bytes.");
@@ -86,16 +89,23 @@ internal sealed unsafe class InputCapManager : IDisposable
         // >>> DANGER!!! <<<
         // We MUST reset the text limit, the editbox WILL accept up to 1kb of text and SEND IT IN A WAY THAT THE SERVER CAN SEE!!!! Over that can be sent, but presumably rejects it.
         // I don't know why, just that it works.
-        var raw = input->RawString.AsSpan();
-        if (raw.Length > _originalMaxByte)
-        {
-            byte[] line = [.. raw, 0];
-            fixed (byte* text = line)
-                input->SetText(text);
-        }
+        Truncate(input, (int)_originalMaxByte);
 
         // Otherwise every ChatLog event would set them again while unlocking is off.
         _captured = false;
+    }
+
+    private static void Truncate(AtkComponentTextInput* input, int limit)
+    {
+        if (input->RawString.AsSpan().Length <= limit)
+            return;
+
+        // A focused box keeps its own copy of the line and puts it back when it loses focus, so focus goes first
+        RaptureAtkModule.Instance()->ClearFocus();
+
+        byte[] line = [.. input->RawString.AsSpan(), 0];
+        fixed (byte* text = line)
+            input->SetText(text);
     }
 
     public void Dispose()
