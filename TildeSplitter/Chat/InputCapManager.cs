@@ -30,8 +30,6 @@ internal sealed unsafe class InputCapManager : IDisposable
 
         foreach (var ev in ChatLogEvents)
             Svc.AddonLife.RegisterListener(ev, "ChatLog", OnChatLogChanged);
-
-        Apply();
     }
 
     private void OnChatLogChanged(AddonEvent type, AddonArgs args) => Apply();

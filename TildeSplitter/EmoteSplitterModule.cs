@@ -69,6 +69,7 @@ internal sealed class EmoteSplitterModule : IDisposable
         _inputCap = new InputCapManager(_settings);
         _enter = new EnterInterceptor(OnEnteredLine);
 
+        Svc.Framework.Update += OnFirstUpdate;
         Svc.Framework.Update += OnFrameworkUpdate;
 
         // Warmed up off-thread.
@@ -99,6 +100,7 @@ internal sealed class EmoteSplitterModule : IDisposable
 
     public void Dispose()
     {
+        Svc.Framework.Update -= OnFirstUpdate;
         Svc.Framework.Update -= OnFrameworkUpdate;
 
         DropBatch();
@@ -352,6 +354,15 @@ internal sealed class EmoteSplitterModule : IDisposable
 
         Refuse(reason!);
         return InputCallbackResult.None;
+    }
+
+    // Dalamud runs the constructor on its load thread, and these two touch the chat box.
+    private void OnFirstUpdate(IFramework framework)
+    {
+        Svc.Framework.Update -= OnFirstUpdate;
+
+        _inputCap.Apply();
+        _enter.TryHook();
     }
 
     private void OnFrameworkUpdate(IFramework framework)

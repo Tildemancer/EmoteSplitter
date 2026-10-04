@@ -25,8 +25,6 @@ internal sealed unsafe class EnterInterceptor : IDisposable
         // If missed, long text goes through with no catch. No bueno
         foreach (var ev in InputCapManager.ChatLogEvents)
             Svc.AddonLife.RegisterListener(ev, "ChatLog", OnChatLogChanged);
-
-        TryHook();
     }
 
     private void OnChatLogChanged(AddonEvent type, AddonArgs args) => TryHook();
@@ -34,7 +32,7 @@ internal sealed unsafe class EnterInterceptor : IDisposable
     // The handler's address is read off the chat box, so this waits for one and hooks it.
     // Only a game address so presumably a handler another plugin swapped isn't ever hooked.
     // Remember the live code starts at Module.BaseAddress + TextSectionOffset! TextSectionBase points into SigScanner
-    private void TryHook()
+    internal void TryHook()
     {
         var input = ChatSender.ChatLogInput();
         if (_hook != null || input == null || input->Callback == null)
