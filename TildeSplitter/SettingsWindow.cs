@@ -105,15 +105,15 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
         ImGui.TextDisabled("#r - How many paragraphs are left.");
         ImGui.TextDisabled("Leave a box empty for no marker.");
 
-        var dirty = Edit("Start of later parts", settings.Split.ContinuationPrefix, 32, settings.Split, static (s, v) => s.ContinuationPrefix = v);
+        var dirty = Edit("Start of later parts", settings.Split.ContinuationPrefix, SplitOptions.MaxMarkerLength, settings.Split, static (s, v) => s.ContinuationPrefix = v);
 
         ImGui.TextDisabled("Opening marker on body paragraphs.");
 
-        dirty |= Edit("End of earlier parts", settings.Split.ContinuationSuffix, 32, settings.Split, static (s, v) => s.ContinuationSuffix = v);
+        dirty |= Edit("End of earlier parts", settings.Split.ContinuationSuffix, SplitOptions.MaxMarkerLength, settings.Split, static (s, v) => s.ContinuationSuffix = v);
 
         ImGui.TextDisabled("Closing marker on all paragraphs except the final one.");
 
-        dirty |= Edit("End of the last part", settings.Split.FinalMarker, 32, settings.Split, static (s, v) => s.FinalMarker = v);
+        dirty |= Edit("End of the last part", settings.Split.FinalMarker, SplitOptions.MaxMarkerLength, settings.Split, static (s, v) => s.FinalMarker = v);
 
         ImGui.TextDisabled("Exclusive markers for the final paragraph.");
 
@@ -132,9 +132,9 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
             return dirty;
 
         using var width = ImRaii.ItemWidth(ImGui.GetFontSize() * 5f);
-        dirty |= Edit("Opening tag", settings.OocOpen, 16, settings, static (s, v) => s.OocOpen = v);
+        dirty |= Edit("Opening tag", settings.OocOpen, Configuration.MaxOocLength, settings, static (s, v) => s.OocOpen = v);
         ImGui.SameLine();
-        dirty |= Edit("Closing tag", settings.OocClose, 16, settings, static (s, v) => s.OocClose = v);
+        dirty |= Edit("Closing tag", settings.OocClose, Configuration.MaxOocLength, settings, static (s, v) => s.OocClose = v);
 
         return dirty;
     }
@@ -196,7 +196,7 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
 
     private static bool DrawMarker(ChunkMarker marker)
     {
-        var dirty = Edit("Text", marker.Text, 64, marker, static (m, v) => m.Text = v);
+        var dirty = Edit("Text", marker.Text, ChunkMarker.MaxTextLength, marker, static (m, v) => m.Text = v);
         dirty |= Choose("Where", SlotNames, (int)marker.Slot, marker, static (m, v) => m.Slot = (MarkerSlot)v);
         dirty |= Choose("On which parts", RepeatNames, (int)marker.Repeat, marker, static (m, v) => m.Repeat = (MarkerRepeat)v);
 

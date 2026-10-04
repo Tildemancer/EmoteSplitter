@@ -31,7 +31,9 @@ public enum MarkerRepeat
 [Serializable]
 public sealed class ChunkMarker
 {
-    public string Text { get; set; } = string.Empty;
+    public const int MaxTextLength = 64;
+
+    public string Text { get; set => field = SplitOptions.Capped(value, MaxTextLength); } = string.Empty;
 
     // Checked because a hand-edited config's out-of-range value would index past SettingsWindow's SlotNames and RepeatNames. Thanks MidoriKami
     public MarkerSlot Slot { get; set => field = Enum.IsDefined(value) ? value : MarkerSlot.AfterOoc; } = MarkerSlot.AfterOoc;

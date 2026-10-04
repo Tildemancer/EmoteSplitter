@@ -14,11 +14,17 @@ public sealed record SplitOptions
 
     public bool PreferSentenceBreaks { get; set; } = true;
 
-    public string ContinuationPrefix { get; set; } = string.Empty;
+    public const int MaxMarkerLength = 32;
 
-    public string ContinuationSuffix { get; set; } = string.Empty;
+    public string ContinuationPrefix { get; set => field = Capped(value, MaxMarkerLength); } = string.Empty;
 
-    public string FinalMarker { get; set; } = string.Empty;
+    public string ContinuationSuffix { get; set => field = Capped(value, MaxMarkerLength); } = string.Empty;
+
+    public string FinalMarker { get; set => field = Capped(value, MaxMarkerLength); } = string.Empty;
+
+    // Ye olde out-of-range guard against hand-edited configs.
+    internal static string Capped(string? text, int length) =>
+        text is null ? string.Empty : text.Length > length ? text[..length] : text;
 
     public List<ChunkMarker> Markers { get; set; } = [];
 
