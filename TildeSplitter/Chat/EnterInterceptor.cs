@@ -32,11 +32,11 @@ internal sealed unsafe class EnterInterceptor : IDisposable
     // The handler's address is read off the chat box, so this waits for one and hooks it.
     // Only a game address so presumably a handler another plugin swapped isn't ever hooked.
     // Remember the live code starts at Module.BaseAddress + TextSectionOffset! TextSectionBase points into SigScanner
-    internal void TryHook()
+    internal bool TryHook()
     {
         var input = ChatSender.ChatLogInput();
         if (_hook != null || input == null || input->Callback == null)
-            return;
+            return _hook != null;
 
         var address = (nint)input->Callback;
         var scanner = Svc.SigScanner;
@@ -45,15 +45,19 @@ internal sealed unsafe class EnterInterceptor : IDisposable
         if (address < code || address >= code + scanner.TextSectionSize)
         {
             if (!_warned)
-                Svc.Log.Warning($"The chat box's Enter handler at 0x{address:X} isn't the game's own, so long lines won't be caught at Enter.");
+            {
+                Svc.Log.Warning($"The chat box's Enter handler at 0x{address:X} isn't the game's own, so it isn't hooked and the chat box keeps the game's limit.");
+                Svc.Chat.PrintError("[Emote Splitter] Some other plugin appears to be modifying chat length. For your safety, Emote Splitter hasn't modified the editbox. Please check your plugins list and reload.");
+            }
 
             _warned = true;
-            return;
+            return false;
         }
 
         _hook = Svc.Interop.HookFromAddress<InputCallback>(address, Detour);
         _hook.Enable();
         Svc.Log.Info($"Enter hook installed at 0x{address:X}.");
+        return true;
     }
 
     // An exception escaping into native code crashes the client. Yikes!
