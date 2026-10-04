@@ -16,6 +16,7 @@
     <Punchline>Type past the chat limit.</Punchline>
     <Description>Type past the chat limit. Long messages are split and sent in order.</Description>
     <Tags>Social;Utility;Roleplay</Tags>
+    <IconUrl>https://raw.githubusercontent.com/Tildemancer/EmoteSplitter/master/images/icon.png</IconUrl>
   </PropertyGroup>
 
 </Project>
