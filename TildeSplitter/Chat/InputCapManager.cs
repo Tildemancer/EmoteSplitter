@@ -18,8 +18,11 @@ internal sealed unsafe class InputCapManager : IDisposable
 
     internal static readonly AddonEvent[] ChatLogEvents = [AddonEvent.PostSetup, AddonEvent.PostRefresh, AddonEvent.PostRequestedUpdate];
 
+    // SetText is what cuts the box back in Truncate, so the limit isn't raised without it.
+    // This shouldn't ever be necessary, but just in case.
     internal static bool Available =>
-        AtkComponentTextInput.MemberFunctionPointers.SetMaxByte != null && AtkComponentTextInput.MemberFunctionPointers.SetMaxChar != null;
+        AtkComponentTextInput.MemberFunctionPointers.SetMaxByte != null && AtkComponentTextInput.MemberFunctionPointers.SetMaxChar != null
+        && AtkComponentTextInput.MemberFunctionPointers.SetText != null;
 
     internal InputCapManager(Configuration settings, Func<bool> hooked)
     {
@@ -28,7 +31,7 @@ internal sealed unsafe class InputCapManager : IDisposable
 
         // Should only warn once. "Should".
         if (!Available)
-            Svc.Log.Warning("SetMaxByte/SetMaxChar could not be located for this game version; leaving the chat input limit alone.");
+            Svc.Log.Warning("SetMaxByte, SetMaxChar or SetText could not be located for this game version; leaving the chat input limit alone.");
 
         foreach (var ev in ChatLogEvents)
             Svc.AddonLife.RegisterListener(ev, "ChatLog", OnChatLogChanged);
