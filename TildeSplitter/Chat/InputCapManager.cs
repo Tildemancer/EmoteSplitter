@@ -48,7 +48,10 @@ internal sealed unsafe class InputCapManager : IDisposable
 
         if (!_captured)
         {
-            (_originalMaxByte, _originalMaxChar, _captured) = (input->ComponentTextData.MaxByte, input->ComponentTextData.MaxChar, true);
+            // Another plugin may have raised the limit already, and Restore would put that back with nothing left on Enter.
+            // TildeTools loaded first made this read 32000 instead of 500.
+            // I can't imagine this would be an issue in the long run, because who else is realistically going to hook this? But, safe, not sorry. I don't know what's out there.
+            (_originalMaxByte, _originalMaxChar, _captured) = (Math.Min(input->ComponentTextData.MaxByte, Configuration.MaxChunkBytes), input->ComponentTextData.MaxChar, true);
             Svc.Log.Info($"Chat input native caps: MaxByte={_originalMaxByte}, MaxChar={_originalMaxChar}");
         }
 
