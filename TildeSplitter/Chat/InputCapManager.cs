@@ -111,6 +111,9 @@ internal sealed unsafe class InputCapManager : IDisposable
         // Man, they said this shit was dangerous, and I didn't listen...
         // fuck me.
         byte[] line = ChatSender.HasPayload(input->RawString.AsSpan()) ? [0] : [.. input->RawString.AsSpan(), 0];
+
+        // The whole line goes back in, and the game's SetText cuts it at MaxByte, between characters
+        // You can test it yourself by spamming 猫, it doesn't mangle anything. Yippee!
         fixed (byte* text = line)
             input->SetText(text);
     }
