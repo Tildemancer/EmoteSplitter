@@ -59,7 +59,7 @@ public sealed class Configuration : IPluginConfiguration
 
     public int IntervalMs { get; set => field = Math.Clamp(value, SendQueue.MinIntervalMs, SendQueue.MaxIntervalMs); } = DefaultIntervalMs;
 
-    public int FreeIntervalMs { get; set => field = Math.Clamp(value, 0, SendQueue.MaxIntervalMs); } = MacroPaceMs;
+    public int FreeIntervalMs { get; set => field = Math.Clamp(value, MacroPaceMs, SendQueue.MaxIntervalMs); } = DefaultIntervalMs;
 
     public int MaxChunksPerMessage { get; set => field = Math.Clamp(value, MinChunksPerMessage, MaxChunksPerMessageCeiling); } = 20;
 

@@ -251,13 +251,9 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
         ImGui.TextDisabled($"FFXIV rate-limits these channels. {SendQueue.MinIntervalMs} ms is the least; set it higher if parts go missing.");
 
         dirty |= Paced("Delay on /fc, /p, /a, /l#, /cwl# (ms)", ref _freeInterval, settings.FreeIntervalMs,
-            0, SendQueue.MaxIntervalMs, settings, static (s, v) => s.FreeIntervalMs = v);
+            Configuration.MacroPaceMs, SendQueue.MaxIntervalMs, settings, static (s, v) => s.FreeIntervalMs = v);
 
-        ImGui.TextDisabled($"Macros post ~{Configuration.MacroPaceMs} ms apart (or every 10 frames at 60 FPS).");
-
-        if (settings.FreeIntervalMs < Configuration.MacroPaceMs)
-            ImGui.TextColored(WarningColor, "DANGER! This is faster than a macro would send, so it might be detectable Square-side! You set it " +
-                                             "this low at your own risk.");
+        ImGui.TextDisabled("Macros post ~167 ms apart (or every 10 frames at 60 FPS), so that is the fastest posting we allow by any means.");
 
         return dirty;
     }

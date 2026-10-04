@@ -247,7 +247,7 @@ public sealed class SendQueue
 
     // Outside ChannelCommands.Unlimited the channels share the game's wait, so it runs from the last part on any of them.
     // A part keeps the post's own pace, and only needs MinIntervalMs after a typed line.
-    // The unlimited ones (FC, party, linkshells) took parts a frame apart and every one arrived, so they're paced like a macro instead. See MacroPaceMs
+    // The unlimited ones (FC, party, linkshells) allowed parts a frame apart, so their delay is its own setting, 167+ms. See MacroPaceMs
     private long DueAt => Math.Max(Math.Max(_heldUntil, _messages[0].PausedFrom + _messages[0].Parts[0].WaitMs), _messages[0] switch
     {
         var head when ChannelCommands.Unlimited(head.Channel) => _lastSentAt + FreeIntervalMs,
