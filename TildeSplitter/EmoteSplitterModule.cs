@@ -295,7 +295,8 @@ internal sealed class EmoteSplitterModule : IDisposable
         if (ReplyPin.IsReplyHeader(header) && _replyTo is { } to)
             header = $"/tell {to}";
 
-        // Only pin bare lines from the chatbox (the one that saves history)
+        // Only pin bare lines flagged to save history, as the chatbox's own are (OnEnteredLine passes it by hand)
+        // Compatibility notes;
         // XIM sends bare lines around a tell target it sets itself.
         // ExtraChat's channels pin to nothing, and a held bare line would go wherever the box is pointed to at that moment.
         if (header.Length == 0 && saveToHistory)
