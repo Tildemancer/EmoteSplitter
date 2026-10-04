@@ -1,9 +1,9 @@
 [
   {
     "Author": "Tildemancer",
-    "Name": "TildeSplitter",
-    "InternalName": "TildeSplitter",
-    "AssemblyVersion": "0.1.0.0",
+    "Name": "Emote Splitter",
+    "InternalName": "EmoteSplitter",
+    "AssemblyVersion": "0.1.1.0",
     "Description": "Type past the chat limit. Long messages are split and sent in order.",
     "Punchline": "Type past the chat limit.",
     "ApplicableVersion": "any",
@@ -20,9 +20,10 @@
     "AcceptsFeedback": true,
     "IsHide": false,
     "IsTestingExclusive": false,
-    "RepoUrl": "https://github.com/Tildemancer/TildeSplitter",
-    "DownloadLinkInstall": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip",
-    "DownloadLinkTesting": "https://github.com/Tildemancer/TildeSplitter/releases/latest/download/latest.zip"
+    "IconUrl": "https://raw.githubusercontent.com/Tildemancer/EmoteSplitter/master/images/icon.png",
+    "RepoUrl": "https://github.com/Tildemancer/EmoteSplitter",
+    "DownloadLinkInstall": "https://github.com/Tildemancer/EmoteSplitter/releases/latest/download/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/Tildemancer/EmoteSplitter/releases/latest/download/latest.zip",
+    "DownloadLinkTesting": "https://github.com/Tildemancer/EmoteSplitter/releases/latest/download/latest.zip"
   }
 ]
