@@ -74,11 +74,19 @@ internal sealed unsafe class EnterInterceptor : IDisposable
                 var input = ((AddonChatLog*)addon)->TextInput;
 
                 // Passes RawString too, null-terminated, because decoding to a string breaks an auto-translated phrase's macro.
-                if (_onTake(MemoryHelper.ReadStringNullTerminated((nint)evaluated), [.. input->RawString.AsSpan(), 0]) is { } result)
+                byte[] bytes = [.. input->RawString.AsSpan(), 0];
+                if (_onTake(MemoryHelper.ReadStringNullTerminated((nint)evaluated), bytes) is { } result)
                 {
-                    // ClearText doesn't reset the character count.
-                    if (result == InputCallbackResult.ClearText && AtkComponentTextInput.MemberFunctionPointers.UpdateCharacterCount != null)
-                        input->UpdateCharacterCount(0, 0);
+                    if (result == InputCallbackResult.ClearText)
+                    {
+                        // It was taken at Enter, so the game never saw the line to put it in its editbox history.
+                        // A held line can't get there later either, sending with ProcessChatBoxEntry's history flag crashes the game.
+                        ChatSender.SaveToHistory(bytes, input);
+
+                        // ClearText doesn't reset the character count.
+                        if (AtkComponentTextInput.MemberFunctionPointers.UpdateCharacterCount != null)
+                            input->UpdateCharacterCount(0, 0);
+                    }
 
                     // None leaves the line in the box as it was typed, unsent
                     return result;

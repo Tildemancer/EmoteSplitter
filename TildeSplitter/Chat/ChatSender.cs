@@ -39,12 +39,8 @@ internal static unsafe class ChatSender
 
     // Null terminated bytes from the box.
     // From EnterInterceptor as it passes them.
-    internal static void SaveToHistory(byte[] raw)
+    internal static void SaveToHistory(byte[] raw, AtkComponentTextInput* input)
     {
-        var input = ChatLogInput();
-        if (input == null)
-            return;
-
         Utf8String* line;
         fixed (byte* p = raw)
             line = Utf8String.FromSequence(p);
