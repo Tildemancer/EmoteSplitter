@@ -93,8 +93,8 @@ internal sealed class SettingsWindow(Configuration settings, Action onChanged) :
         ImGui.TextDisabled("|n - Splits the text manually.");
         ImGui.TextDisabled("|nn - Splits the text manually, but with no markers on the split paragraph.");
         ImGui.TextDisabled("|nb - Splits the text manually and without markers, but counts it as a part of the total after it's posted (not before).");
-        ImGui.TextDisabled($"|n# - Splits the text manually, then waits # seconds (1-{SendQueue.MaxIntervalMs / 1000}) before " +
-                           "the next post. Great for dramatic timing.");
+        // Kept as one literal, because joined with a + the compiler builds a string every frame and ImGui's own handler builds none.
+        ImGui.TextDisabled($"|n# - Splits the text manually, then waits # seconds (1-{SendQueue.MaxIntervalMs / 1000}) before the next post. Great for dramatic timing.");
     }
 
     private bool DrawMarkers()
