@@ -34,9 +34,12 @@ internal sealed unsafe class EnterInterceptor : IDisposable
     // Remember the live code starts at Module.BaseAddress + TextSectionOffset! TextSectionBase points into SigScanner
     internal bool TryHook()
     {
+        if (_hook != null)
+            return true;
+
         var input = ChatSender.ChatLogInput();
-        if (_hook != null || input == null || input->Callback == null)
-            return _hook != null;
+        if (input == null || input->Callback == null)
+            return false;
 
         var address = (nint)input->Callback;
         var scanner = Svc.SigScanner;
