@@ -86,6 +86,10 @@ internal sealed unsafe class EnterInterceptor : IDisposable
                         // ClearText doesn't reset the character count.
                         if (AtkComponentTextInput.MemberFunctionPointers.UpdateCharacterCount != null)
                             input->UpdateCharacterCount(0, 0);
+
+                        // Closes the box the way the game's own send does
+                        // Next tick, once ClearText has emptied it, since a focused box puts its own copy of the line back when it loses focus
+                        Svc.Framework.RunOnTick(() => RaptureAtkModule.Instance()->ClearFocus());
                     }
 
                     // None leaves the line in the box as it was typed, unsent
