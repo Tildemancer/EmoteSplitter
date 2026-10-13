@@ -3,7 +3,7 @@
     "Author": "Tildemancer",
     "Name": "Emote Splitter",
     "InternalName": "EmoteSplitter",
-    "AssemblyVersion": "0.1.1.0",
+    "AssemblyVersion": "0.1.2.0",
     "Description": "Type past the chat limit. Long messages are split and sent in order.",
     "Punchline": "Type past the chat limit.",
     "ApplicableVersion": "any",
